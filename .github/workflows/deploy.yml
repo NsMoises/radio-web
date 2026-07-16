@@ -19,13 +19,12 @@ jobs:
       - run: npm run build
 
       - name: Upload to cPanel via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: sebastianpopp/ftp-action@v2
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
+          host: ${{ secrets.FTP_HOST }}
+          user: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
-          local-dir: dist/
-          server-dir: ${{ secrets.FTP_PATH }}
-          protocol: ftps
-          security: loose
-          port: 21
+          localDir: dist/
+          remoteDir: ${{ secrets.FTP_PATH }}
+          forceSsl: false
+          options: --delete
