@@ -29,4 +29,3 @@ jobs:
           protocol: ftps
           security: loose
           port: 21
-          passive-mode: true
