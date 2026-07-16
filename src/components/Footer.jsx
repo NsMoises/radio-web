@@ -42,7 +42,7 @@ export default function Footer() {
     <footer className="footer" ref={ref}>
       <div
         className="footer__glow"
-        style={{ background: `radial-gradient(600px circle at ${pos.x}% ${pos.y}%, rgba(212,168,71,0.20), transparent 60%)` }}
+        style={{ background: `radial-gradient(600px circle at ${pos.x}% ${pos.y}%, rgba(0,229,255,0.20), transparent 60%)` }}
       />
 
       <div className="footer__wave" aria-hidden="true">

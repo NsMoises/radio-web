@@ -80,7 +80,7 @@ export default function Top15Videos() {
 
   // extract dominant color from thumb for ambient glow
   const currentVideoId = current?.videoId;
-  const [ambient, setAmbient] = useState("rgba(212,168,71,0.15)");
+  const [ambient, setAmbient] = useState("rgba(0,229,255,0.15)");
   const ambientTimeout = useRef(null);
   const updateAmbient = useCallback((imgSrc) => {
     clearTimeout(ambientTimeout.current);
@@ -95,7 +95,7 @@ export default function Top15Videos() {
       const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
       setAmbient(`rgba(${r},${g},${b},0.18)`);
     };
-    img.onerror = () => setAmbient("rgba(212,168,71,0.15)");
+    img.onerror = () => setAmbient("rgba(0,229,255,0.15)");
   }, []);
   useEffect(() => { if (currentVideoId) updateAmbient(THUMB(currentVideoId)); }, [currentVideoId, updateAmbient]);
 
