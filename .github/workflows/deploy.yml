@@ -18,13 +18,16 @@ jobs:
 
       - run: npm run build
 
-      - name: Upload to cPanel via FTP
-        uses: sebastianpopp/ftp-action@v2
-        with:
-          host: ${{ secrets.FTP_HOST }}
-          user: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASS }}
-          localDir: dist/
-          remoteDir: ${{ secrets.FTP_PATH }}
-          forceSsl: false
-          options: --delete
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Upload to cPanel via lftp
+        run: |
+          lftp -c "
+            set ssl:verify-certificate no
+            set ftp:ssl-allow true
+            set ftp:ssl-protect-data true
+            open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
+            mirror --reverse --delete --verbose dist/ ${{ secrets.FTP_PATH }}
+            quit
+          "
