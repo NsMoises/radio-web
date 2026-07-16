@@ -1,0 +1,14 @@
+{
+  "djs": [
+    {
+      "id": 1, "name": "William", "role": "Director · Locutor", "program": "La Lista de los 20",
+      "image": "https://picsum.photos/seed/dj1/400/400", "bio": "Lleva 15 años al aire. Música variety y entrevistas."
+    },
+    { "id": 2, "name": "DJ William", "role": "DJ Residente", "program": "The Night is Young",
+      "image": "https://picsum.photos/seed/dj2/400/400", "bio": "Mezclas en vivo hasta el amanecer. House y Latin." },
+    { "id": 3, "name": "Elena Ruiz", "role": "Locutora", "program": "Despierta con Música",
+      "image": "https://picsum.photos/seed/dj3/400/400", "bio": "Magacín matinal con humor, antivirus y clásicos." },
+    { "id": 4, "name": "Marco Polo", "role": "DJ · Colecionista", "program": "Tarde de Discos",
+      "image": "https://picsum.photos/seed/dj4/400/400", "bio": "Vinilos y rarezas. La música que nunca se escuchó en la radio comercial." }
+  ]
+}

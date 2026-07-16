@@ -1,0 +1,40 @@
+{
+  "articles": [
+    {
+      "id": 1,
+      "title": "30 años de la canción del verano: repaso a los clásicos",
+      "date": "2026-07-10",
+      "category": "Música",
+      "excerpt": "Repasamos los himnos que marcaron cada verano de las últimas tres décadas y por qué siguen sonando.",
+      "body": "Desde los noventa, cada verano tiene su banda sonora. Analizamos qué las hace perdurables: el ritmo, la nostalgia o el contexto cultural.",
+      "cover": "https://picsum.photos/seed/n1/600/350"
+    },
+    {
+      "id": 2,
+      "title": "Estudio en casa: cómo montar tu rincón de grabación",
+      "date": "2026-07-05",
+      "category": "Técnica",
+      "excerpt": "Guía práctica para montar un pequeño estudio de grabación sin gastar una fortuna.",
+      "body": "Micrófono, interfaz, auriculares y un buen software. Con estos cuatro elementos puedes empezar a producir maquetas dignas desde casa.",
+      "cover": "https://picsum.photos/seed/n2/600/350"
+    },
+    {
+      "id": 3,
+      "title": "Podcast: la historia del synth-pop español",
+      "date": "2026-06-28",
+      "category": "Podcast",
+      "excerpt": "Nuevo episodio de nuestro podcast: la irrupción de los teclados en los años 80 y la Movida.",
+      "body": "En este capítulo analizamos cómo los sintetizadores cambiaron el sonido de la música española de los 80, con entrevistas a protagonistas de la época.",
+      "cover": "https://picsum.photos/seed/n3/600/350"
+    },
+    {
+      "id": 4,
+      "title": "Programación musical: cómo se elige lo que suena",
+      "date": "2026-06-20",
+      "category": "Actualidad",
+      "excerpt": "Detrás de cada listado de reproducción hay un trabajo de selección que mezcla datos, oído y cariño.",
+      "body": "Conversamos con nuestro director musical sobre el oficio de confeccionar listas diarias que conectan con la audiencia.",
+      "cover": "https://picsum.photos/seed/n4/600/350"
+    }
+  ]
+}

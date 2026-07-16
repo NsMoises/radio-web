@@ -1,0 +1,31 @@
+{
+  "premieres": [
+    {
+      "id": 1,
+      "title": "El Eco del Horizonte",
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "poster": "https://picsum.photos/seed/movie1/300/450",
+      "date": "2026-07-18",
+      "genre": "Aventura · Drama",
+      "description": "Un grupo de exploradores cruza un océano inexplorado en busca de una isla que solo aparece una vez cada cien años."
+    },
+    {
+      "id": 2,
+      "title": "Noche en la Ciudad",
+      "url": "https://www.youtube.com/watch?v=9bZkp7q19f0",
+      "poster": "https://picsum.photos/seed/movie2/300/450",
+      "date": "2026-07-25",
+      "genre": "Thriller · Musical",
+      "description": "Traslucecen su pareja de baile y un detective se cruzan en una metrópolis donde los sueños y los secretos se entretejen."
+    },
+    {
+      "id": 3,
+      "title": "El Retorno del Sur",
+      "url": "https://www.youtube.com/watch?v=kJQP7kiw5Fk",
+      "poster": "https://picsum.photos/seed/movie3/300/450",
+      "date": "2026-08-01",
+      "genre": "Drama · Familiar",
+      "description": "Una matriarca reúne por primera vez en veinte años a toda su familia en la casa donde creció, al sur del país."
+    }
+  ]
+}

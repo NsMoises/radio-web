@@ -1,0 +1,26 @@
+{
+  "seasonLabel": "Verano 2026",
+  "slides": [
+    {
+      "id": 1,
+      "image": "https://picsum.photos/seed/banner-verano-1/1600/600",
+      "title": "Música que enciende el verano",
+      "subtitle": "Las canciones que sonarán en cada puesta de sol",
+      "season": "verano"
+    },
+    {
+      "id": 2,
+      "image": "https://picsum.photos/seed/banner-verano-2/1600/600",
+      "title": "Tu emisora, en directo 24 horas",
+      "subtitle": "La mejor Programación musical te acompaña toda la semana",
+      "season": "verano"
+    },
+    {
+      "id": 3,
+      "image": "https://picsum.photos/seed/banner-verano-3/1600/600",
+      "title": "Estrenos de cine y música",
+      "subtitle": "Descubre los tráilers más esperados de la temporada",
+      "season": "verano"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "monthLabel": "Especiales de este mes",
+  "specials": [
+    { "id": 1, "day": 6,  "artist": "Oscar de León",    "image": "https://picsum.photos/seed/sp1/300/300", "bio": "El sonero de Venezuela. Una noche de salsa sin par." },
+    { "id": 2, "day": 13, "artist": "Juan Gabriel",     "image": "https://picsum.photos/seed/sp2/300/300", "bio": "Tributo al Divo de Juárez: baladas y rancheras." },
+    { "id": 3, "day": 20, "artist": "Ricardo Montaner", "image": "https://picsum.photos/seed/sp3/300/300", "bio": "Especial baladas románticas de los 90 con el venezolano." },
+    { "id": 4, "day": 27, "artist": "Beyoncé",          "image": "https://picsum.photos/seed/sp4/300/300", "bio": "El pop global se toma la radio. Set exclusivo Queen B." }
+  ]
+}
