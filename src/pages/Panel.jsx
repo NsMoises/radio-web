@@ -752,6 +752,79 @@ function EditorDjs() {
   );
 }
 
+function EditorVotaciones() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState({});
+
+  const load = useCallback(() => {
+    setLoading(true);
+    fetch("/api/votaciones.php", { credentials: "same-origin" })
+      .then((r) => r.json())
+      .then((j) => { setData(j); setLoading(false); })
+      .catch(() => { setData(null); setLoading(false); });
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (loading) return <p style={{ color: "var(--text-dim)" }}>Cargando votaciones…</p>;
+  if (!data || !data.ok) return <p style={{ color: "var(--text-dim)" }}>No hay votaciones o no se pudieron cargar.</p>;
+
+  const results = data.results || [];
+
+  return (
+    <>
+      <header className="panel__head">
+        <div>
+          <h1>Votaciones del público</h1>
+          <p>{data.totalVotes || 0} votos totales · {results.length} canciones votadas</p>
+        </div>
+        <div className="panel__actions">
+          <button className="btn btn--ghost btn--small" onClick={load} title="Actualizar">🔄 Actualizar</button>
+        </div>
+      </header>
+
+      {results.length === 0 && <p className="panel__empty">Aún no hay votos. Cuando los oyentes voten, aparecerán aquí.</p>}
+
+      <div className="panel__list">
+        {results.map((song) => (
+          <div className="panel-row" key={song.songId} style={{ flexDirection: "column", alignItems: "stretch" }}>
+            <div
+              className="panel-row__order"
+              style={{ cursor: "pointer", width: "100%" }}
+              onClick={() => setExpanded((e) => ({ ...e, [song.songId]: !e[song.songId] }))}
+            >
+              <span className="panel-row__num">#{song.position}</span>
+              <div style={{ flex: 1, marginLeft: 12 }}>
+                <div style={{ fontWeight: 700, color: "#fff" }}>{song.title}</div>
+                <div style={{ fontSize: "0.85rem", color: "var(--text-dim)" }}>{song.artist}</div>
+              </div>
+              <span className="panel-row__num" style={{ background: "var(--accent-soft)", color: "var(--accent)", borderRadius: "20px", padding: "4px 12px" }}>
+                {song.total} {song.total === 1 ? "voto" : "votos"}
+              </span>
+              <span style={{ marginLeft: 8, color: "var(--text-mute)" }}>{expanded[song.songId] ? "▲" : "▼"}</span>
+            </div>
+
+            {expanded[song.songId] && (
+              <div style={{ marginTop: 10, marginLeft: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+                {song.voters.map((v, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: "0.88rem" }}>
+                    <span style={{ color: "var(--text)" }}>
+                      <span style={{ color: "var(--accent)", marginRight: 6 }}>♡</span>
+                      {v.nombre}
+                    </span>
+                    <span style={{ color: "var(--text-mute)" }}>{v.date}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 export default function Panel() {
   const [authed, setAuthed] = useState(null);
   const [pwd, setPwd] = useState("");
@@ -820,6 +893,7 @@ export default function Panel() {
         <button className={"panel__tab" + (tab === "specials" ? " panel__tab--active" : "")} onClick={() => setTab("specials")} role="tab" aria-selected={tab === "specials"}>Especiales</button>
         <button className={"panel__tab" + (tab === "banner" ? " panel__tab--active" : "")} onClick={() => setTab("banner")} role="tab" aria-selected={tab === "banner"}>Banner</button>
         <button className={"panel__tab" + (tab === "djs" ? " panel__tab--active" : "")} onClick={() => setTab("djs")} role="tab" aria-selected={tab === "djs"}>Locutores</button>
+        <button className={"panel__tab" + (tab === "votos" ? " panel__tab--active" : "")} onClick={() => setTab("votos")} role="tab" aria-selected={tab === "votos"}>🗳️ Votaciones</button>
         <div className="panel__tab-logout">
           <button className="btn btn--ghost btn--small panel__logout" onClick={logout} title="Cerrar sesión">⏻ Salir</button>
         </div>
@@ -831,6 +905,7 @@ export default function Panel() {
       {tab === "specials" && <EditorEspeciales />}
       {tab === "banner" && <EditorBanner />}
       {tab === "djs" && <EditorDjs />}
+      {tab === "votos" && <EditorVotaciones />}
 
       <section className="panel__docs">
         <details>

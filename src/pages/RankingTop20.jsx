@@ -11,7 +11,7 @@ const COLS = 3;
 
 export default function RankingTop20() {
   const { data, loading, error } = useRanking();
-  const { votes, myVote, vote } = useVotos();
+  const { votes, myVote, vote, voteMsg } = useVotos();
   const songs = useMemo(() => decorateSongs(data?.songs || []), [data]);
   const [active, setActive] = useState(null);   // null => modal cerrado
   const cols = COLS;
@@ -59,6 +59,8 @@ export default function RankingTop20() {
           fecha de entrada de cada canción.
         </p>
       </header>
+
+      {voteMsg && <div className="vote-toast">{voteMsg}</div>}
 
       {/* Layout: cuadrícula izq + leyenda fija derecha */}
       <div className="top20-layout">

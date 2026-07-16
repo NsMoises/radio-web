@@ -120,8 +120,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   }
 
   // Nuevo voto
+  $nombre = trim($body["nombre"] ?? "");
+  if ($nombre === "") $nombre = "Anónimo";
   $list[] = [
     "songId"    => $songId,
+    "nombre"    => mb_substr($nombre, 0, 60),
     "ip"        => $ip,
     "date"      => $today,
     "createdAt" => date("c")

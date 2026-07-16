@@ -914,6 +914,15 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 .songcard__vote--done { color: #ff3b5c; border-color: rgba(255,59,92,0.4); }
 .songcard__vote--done:hover { background: rgba(11,8,7,0.85); cursor: pointer; }
 .songcard__vote-count { font-size: 0.78rem; font-weight: 700; min-width: 8px; text-align: center; }
+.vote-toast {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--bg-elev); border: 1px solid var(--accent);
+  color: var(--text); padding: 12px 24px; border-radius: var(--radius-pill);
+  font-weight: 600; font-size: 0.92rem; z-index: 200;
+  box-shadow: 0 8px 32px rgba(212,168,71,0.3);
+  animation: toastIn 0.3s ease-out;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 .songcard__body { padding: 12px 14px 14px; }
 .songcard__title {
   font-weight: 600; font-size: 0.98rem; line-height: 1.3;
