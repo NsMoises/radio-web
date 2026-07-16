@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 
 const API_URL = "/api/votar.php";
 const LS_MY_VOTE = "radio-web:votos:myVote";
@@ -40,6 +40,7 @@ export function useVotos() {
     try {
       const res = await fetch(API_URL, {
         method: "POST",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ songId })
       });

@@ -50,18 +50,17 @@ export async function copyToClipboard(text) {
 }
 
 // Sube una imagen al servidor via api/upload.php
-export async function uploadImage(file, password) {
+export async function uploadImage(file) {
   const formData = new FormData();
   formData.append("file", file);
   try {
     const res = await fetch("/api/upload.php", {
       method: "POST",
-      headers: { "X-Panel-Password": password },
+      credentials: "same-origin",
       body: formData
     });
     return await res.json();
   } catch {
-    // Fallback dev: comprime y genera data URL para previsualización
     const dataUrl = await compressImage(file, 1200, 0.6);
     return { ok: true, url: dataUrl, dev: true };
   }

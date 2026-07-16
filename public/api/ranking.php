@@ -1,35 +1,21 @@
 <?php
 /**
- * API minimal para el ranking Top 20 de la radio.
- * Compatible con cPanel (PHP 7.4+). Sin dependencias.
- *
- *   GET  /api/ranking.php          -> devuelve el ranking.json actual
- *   POST /api/ranking.php          -> guarda el ranking.json enviado en el body
- *        Header: X-Panel-Password: <PANEL_PASSWORD>
- *        Body:   JSON del ranking
- *
- * El archivo se guarda en ./data/ranking.json (junto a este script).
- * Asegurate de dar permisos de escritura a esa carpeta (chmod 755 o 775).
- *
- * Cambia PANEL_PASSWORD abajo por la misma que uses en src/config.js.
+ * API para el ranking Top 20 de la radio.
+ *   GET  -> devuelve ranking.json
+ *   POST -> guarda ranking.json (requiere sesion auth)
  */
+require_once __DIR__ . "/auth.php";
 
-const PANEL_PASSWORD = "radio2026";
 const DATA_DIR  = __DIR__ . "/data";
 const DATA_FILE = DATA_DIR . "/ranking.json";
 
-// Permite que la propia web (mismo dominio) consuma la API.
-header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Origin: " . ($_SERVER["HTTP_ORIGIN"] ?? "*"));
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, X-Panel-Password");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Credentials: true");
 header("Content-Type: application/json; charset=utf-8");
 
-if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
-  http_response_code(204);
-  exit;
-}
-
-// Crea la carpeta data si no existe.
+if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") { http_response_code(204); exit; }
 if (!is_dir(DATA_DIR)) { @mkdir(DATA_DIR, 0775, true); }
 
 if ($_SERVER["REQUEST_METHOD"] === "GET") {
@@ -43,13 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-  // Login por cabecera
-  $pwd = isset($_SERVER["HTTP_X_PANEL_PASSWORD"]) ? $_SERVER["HTTP_X_PANEL_PASSWORD"] : "";
-  if ($pwd !== PANEL_PASSWORD) {
-    http_response_code(401);
-    echo json_encode(["ok" => false, "error" => "Contraseña incorrecta"]);
-    exit;
-  }
+  requireAuth();
 
   $raw = file_get_contents("php://input");
   $data = json_decode($raw, true);
@@ -59,7 +39,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     exit;
   }
 
-  // Validación mínima de cada entrada.
   foreach ($data["songs"] as $i => &$s) {
     $s["position"]   = $i + 1;
     $s["lastWeekPosition"] = isset($s["lastWeekPosition"]) ? (int)$s["lastWeekPosition"] : 0;
@@ -75,8 +54,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
   if (!isset($data["lastUpdatedAt"])) { $data["lastUpdatedAt"] = date("Y-m-d"); }
   if (!isset($data["weekLabel"]) || $data["weekLabel"] === "") {
-    setlocale(LC_TIME, "es_ES.UTF-8", "es_ES", "Spanish");
-    $data["weekLabel"] = "Semana del " . date("d") . " de " . ucfirst(strftime("%B")) . " de " . date("Y");
+    $months = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    $m = (int)date("n") - 1;
+    $data["weekLabel"] = "Semana del " . date("d") . " de " . ucfirst($months[$m]) . " de " . date("Y");
   }
 
   $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -84,7 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
   if ($ok === false) {
     http_response_code(500);
-    echo json_encode(["ok" => false, "error" => "No se pudo escribir data/ranking.json (revisa permisos chmod 775)"]);
+    echo json_encode(["ok" => false, "error" => "No se pudo escribir data/ranking.json (revisa permisos 775)"]);
     exit;
   }
   echo json_encode(["ok" => true, "saved" => count($data["songs"]) . " canciones"]);

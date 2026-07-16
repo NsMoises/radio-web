@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { PANEL_PASSWORD } from "../config";
 import { extractYouTubeId, youtubeThumb, fetchYoutubeInfo } from "../utils/youtube-utils.js";
 import { useRanking } from "../hooks/useRanking.js";
 import { useVideos } from "../hooks/useVideos.js";
@@ -20,7 +19,7 @@ function UploadBtn({ onUpload, label = "Subir imagen" }) {
     if (!file) return;
     setUploading(true);
     try {
-      const res = await uploadImage(file, PANEL_PASSWORD);
+      const res = await uploadImage(file);
       if (res.ok && res.url) {
         onUpload(res.url);
       } else {
@@ -754,29 +753,48 @@ function EditorDjs() {
 }
 
 export default function Panel() {
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem("panel:authed") === "1");
+  const [authed, setAuthed] = useState(null);
   const [pwd, setPwd] = useState("");
   const [pwdError, setPwdError] = useState(false);
+  const [loggingIn, setLoggingIn] = useState(false);
   const [tab, setTab] = useState("top20");
   const [status, setStatus] = useState(null);
 
-  const logout = () => {
-    sessionStorage.removeItem("panel:authed");
+  useEffect(() => {
+    fetch("/api/login.php", { credentials: "same-origin" })
+      .then((r) => r.json())
+      .then((j) => setAuthed(j?.authed === true))
+      .catch(() => setAuthed(false));
+  }, []);
+
+  const logout = async () => {
+    try { await fetch("/api/login.php", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) }); } catch {}
     setAuthed(false);
     setPwd("");
     setStatus(null);
   };
 
-  const login = (e) => {
+  const login = async (e) => {
     e.preventDefault();
-    if (pwd === PANEL_PASSWORD) {
-      setAuthed(true);
-      setPwdError(false);
-      sessionStorage.setItem("panel:authed", "1");
-    } else {
+    setLoggingIn(true);
+    setPwdError(false);
+    try {
+      const res = await fetch("/api/login.php", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pwd })
+      });
+      const j = await res.json();
+      if (j?.ok) { setAuthed(true); }
+      else { setPwdError(true); }
+    } catch {
       setPwdError(true);
     }
+    setLoggingIn(false);
   };
+
+  if (authed === null) return null;
 
   if (!authed) {
     return (
@@ -784,9 +802,9 @@ export default function Panel() {
         <form className="panel-login__card" onSubmit={login}>
           <h1>Panel de edición</h1>
           <p className="panel-login__sub">Introduce la contraseña para editar el ranking y los vídeos.</p>
-          <input type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} placeholder="Contraseña" autoFocus />
+          <input type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} placeholder="Contraseña" autoFocus disabled={loggingIn} />
           {pwdError && <p className="panel-login__err">Contraseña incorrecta.</p>}
-          <button type="submit" className="btn btn--primary">Entrar</button>
+          <button type="submit" className="btn btn--primary" disabled={loggingIn}>{loggingIn ? "Entrando…" : "Entrar"}</button>
         </form>
       </div>
     );
@@ -821,7 +839,7 @@ export default function Panel() {
             <li>Sube toda la carpeta <code>dist</code> a <code>public_html</code> vía FTP o el Gestor de archivos.</li>
             <li>Verifica que existan <code>public_html/api/ranking.php</code>, <code>public_html/api/videos.php</code> y sus respectivos <code>data/</code>.</li>
             <li>Dar permisos de escritura: <code>chmod 775 public_html/api/data</code> (y <code>chmod 664 *.json</code>).</li>
-            <li>Cambia <code>PANEL_PASSWORD</code> dentro de ambos PHP y en <code>src/config.js</code> para que coincidan.</li>
+            <li>Cambia <code>PANEL_PASSWORD</code> dentro de <code>api/auth.php</code> para mayor seguridad.</li>
             <li>Abre <code>https://tudominio.es/panel</code>, escribe la contraseña y edita.</li>
           </ol>
         </details>

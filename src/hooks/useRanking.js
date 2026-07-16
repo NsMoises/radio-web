@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import { RANKING_API_URL, PANEL_PASSWORD } from "../config";
+﻿import { useEffect, useState, useCallback } from "react";
+import { RANKING_API_URL } from "../config";
 import rankingFallback from "../data/ranking.json";
 
 const LS_KEY = "radio-web:ranking:backup";
@@ -17,7 +17,7 @@ export function useRanking() {
       const res = await fetch(RANKING_API_URL, { method: "GET" });
       if (!res.ok) throw new Error("API " + res.status);
       const json = await res.json();
-      if (!json || !Array.isArray(json.songs)) throw new Error("Formato inválido");
+      if (!json || !Array.isArray(json.songs)) throw new Error("Formato invÃ¡lido");
       setData(json);
       try { localStorage.setItem(LS_KEY, JSON.stringify(json)); } catch {}
       return json;
@@ -51,7 +51,8 @@ export function useRanking() {
     try {
       const res = await fetch(RANKING_API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Panel-Password": PANEL_PASSWORD },
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newData)
       });
       const json = await res.json();

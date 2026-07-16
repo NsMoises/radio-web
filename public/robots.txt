@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /panel
+
+Sitemap: https://radio.solperuradio.es/sitemap.xml

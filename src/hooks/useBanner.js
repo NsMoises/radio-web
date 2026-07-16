@@ -1,5 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
-import { PANEL_PASSWORD } from "../config";
+﻿import { useEffect, useState, useCallback } from "react";
 import bannerFallback from "../data/banner.json";
 
 const API_URL = "/api/banner.php";
@@ -17,7 +16,7 @@ export function useBanner() {
       const res = await fetch(API_URL, { method: "GET" });
       if (!res.ok) throw new Error("API " + res.status);
       const json = await res.json();
-      if (!json || !Array.isArray(json.slides)) throw new Error("Formato inválido");
+      if (!json || !Array.isArray(json.slides)) throw new Error("Formato invÃ¡lido");
       setData(json);
       try { localStorage.setItem(LS_KEY, JSON.stringify(json)); } catch {}
       return json;
@@ -44,7 +43,8 @@ export function useBanner() {
     try {
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Panel-Password": PANEL_PASSWORD },
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newData)
       });
       const json = await res.json();

@@ -1,5 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
-import { PANEL_PASSWORD } from "../config";
+﻿import { useEffect, useState, useCallback } from "react";
 import videosFallback from "../data/top15videos.json";
 
 const VIDEOS_API_URL = "/api/videos.php";
@@ -18,7 +17,7 @@ export function useVideos() {
       const res = await fetch(VIDEOS_API_URL, { method: "GET" });
       if (!res.ok) throw new Error("API " + res.status);
       const json = await res.json();
-      if (!json || !Array.isArray(json.videos)) throw new Error("Formato inválido");
+      if (!json || !Array.isArray(json.videos)) throw new Error("Formato invÃ¡lido");
       setData(json);
       try { localStorage.setItem(LS_KEY, JSON.stringify(json)); } catch {}
       return json;
@@ -52,7 +51,8 @@ export function useVideos() {
     try {
       const res = await fetch(VIDEOS_API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Panel-Password": PANEL_PASSWORD },
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newData)
       });
       const json = await res.json();
