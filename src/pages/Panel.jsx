@@ -771,6 +771,7 @@ function EditorVotaciones() {
   if (!data || !data.ok) return <p style={{ color: "var(--text-dim)" }}>No hay votaciones o no se pudieron cargar.</p>;
 
   const results = data.results || [];
+  const maxVotes = results.length > 0 ? results[0].total : 1;
 
   return (
     <>
@@ -784,43 +785,47 @@ function EditorVotaciones() {
         </div>
       </header>
 
-      {results.length === 0 && <p className="panel__empty">Aún no hay votos. Cuando los oyentes voten, aparecerán aquí.</p>}
+      {results.length === 0 && (
+        <p className="panel__empty">Aún no hay votos. Cuando los oyentes voten, aparecerán aquí.</p>
+      )}
 
-      <div className="panel__list">
-        {results.map((song) => (
-          <div className="panel-row" key={song.songId} style={{ flexDirection: "column", alignItems: "stretch" }}>
-            <div
-              className="panel-row__order"
-              style={{ cursor: "pointer", width: "100%" }}
-              onClick={() => setExpanded((e) => ({ ...e, [song.songId]: !e[song.songId] }))}
-            >
-              <span className="panel-row__num">#{song.position}</span>
-              <div style={{ flex: 1, marginLeft: 12 }}>
-                <div style={{ fontWeight: 700, color: "#fff" }}>{song.title}</div>
-                <div style={{ fontSize: "0.85rem", color: "var(--text-dim)" }}>{song.artist}</div>
-              </div>
-              <span className="panel-row__num" style={{ background: "var(--accent-soft)", color: "var(--accent)", borderRadius: "20px", padding: "4px 12px" }}>
-                {song.total} {song.total === 1 ? "voto" : "votos"}
-              </span>
-              <span style={{ marginLeft: 8, color: "var(--text-mute)" }}>{expanded[song.songId] ? "▲" : "▼"}</span>
-            </div>
-
-            {expanded[song.songId] && (
-              <div style={{ marginTop: 10, marginLeft: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-                {song.voters.map((v, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: "0.88rem" }}>
-                    <span style={{ color: "var(--text)" }}>
-                      <span style={{ color: "var(--accent)", marginRight: 6 }}>♡</span>
-                      {v.nombre}
-                    </span>
-                    <span style={{ color: "var(--text-mute)" }}>{v.date}</span>
+      {results.length > 0 && (
+        <div className="votaciones">
+          {results.map((song, idx) => {
+            const pct = Math.round((song.total / maxVotes) * 100);
+            const isOpen = expanded[song.songId];
+            return (
+              <div className={"votacion-card" + (isOpen ? " votacion-card--open" : "")} key={song.songId}>
+                <div className="votacion-card__head" onClick={() => setExpanded((e) => ({ ...e, [song.songId]: !e[song.songId] }))}>
+                  <span className="votacion-card__rank">#{idx + 1}</span>
+                  <div className="votacion-card__info">
+                    <div className="votacion-card__title">{song.title}</div>
+                    <div className="votacion-card__artist">{song.artist}</div>
                   </div>
-                ))}
+                  <div className="votacion-card__bar-wrap">
+                    <div className="votacion-card__bar" style={{ width: pct + "%" }} />
+                  </div>
+                  <span className="votacion-card__count">{song.total}</span>
+                  <span className="votacion-card__arrow">{isOpen ? "▲" : "▼"}</span>
+                </div>
+
+                {isOpen && (
+                  <div className="votacion-card__voters">
+                    <div className="votacion-card__voters-title">Votantes ({song.voters.length})</div>
+                    {song.voters.map((v, i) => (
+                      <div className="votacion-voter" key={i}>
+                        <span className="votacion-voter__icon">❤</span>
+                        <span className="votacion-voter__name">{v.nombre}</span>
+                        <span className="votacion-voter__date">{v.date}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }
