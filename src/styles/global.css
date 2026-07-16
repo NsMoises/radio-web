@@ -1573,9 +1573,18 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
   display: inline-flex; align-items: center; gap: 7px;
   font-size: 0.74rem; font-weight: 700; letter-spacing: .1em; color: var(--accent);
 }
+.footer__onair--off { color: var(--down); }
 .footer__onair-dot {
   width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
   box-shadow: 0 0 10px var(--accent); animation: pulse 1.4s ease-in-out infinite;
+}
+.footer__onair-dot--off {
+  background: var(--down); box-shadow: 0 0 10px var(--down);
+  animation: none;
+}
+.footer__onair-dot--loading {
+  background: var(--text-mute); box-shadow: none;
+  animation: pulse 1s ease-in-out infinite;
 }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 

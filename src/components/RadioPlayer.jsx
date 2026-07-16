@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { STREAM_URL, STATION } from "../config";
+import { useStream } from "../context/StreamContext.jsx";
 
 const OFFLINE_MSG = "📡 No estamos al aire — vuelve más tarde";
 
@@ -11,6 +12,11 @@ export default function RadioPlayer() {
   const [connectAttempts, setConnectAttempts] = useState(0);
   const [volume, setVolume] = useState(0.8);
   const [muted, setMuted] = useState(false);
+  const { setStatus } = useStream();
+
+  useEffect(() => {
+    setStatus({ playing, offline: loading ? false : offline, loading });
+  }, [playing, offline, loading, setStatus]);
 
   useEffect(() => {
     const audio = audioRef.current;

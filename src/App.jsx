@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { VideoPlayerProvider } from "./context/VideoPlayerContext.jsx";
+import { StreamProvider } from "./context/StreamContext.jsx";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import RadioPlayer from "./components/RadioPlayer.jsx";
@@ -38,6 +39,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <VideoPlayerProvider>
+        <StreamProvider>
         <div className="app">
           <CursorGlow />
           <Navbar />
@@ -58,6 +60,7 @@ export default function App() {
           <RadioPlayer />
           <FloatingMiniPlayer />
         </div>
+        </StreamProvider>
       </VideoPlayerProvider>
     </ErrorBoundary>
   );

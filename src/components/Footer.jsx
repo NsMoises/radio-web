@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useRef, useState, useCallback, useEffect } from "react";
 import { STATION } from "../config";
+import { useStream } from "../context/StreamContext.jsx";
 
 const SOCIALS = [
   { label: "Instagram", href: "#", icon: "IG" },
@@ -21,6 +22,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
   const ref = useRef(null);
   const [pos, setPos] = useState({ x: 50, y: 50 });
+  const { playing, offline, loading } = useStream();
 
   const handleMouse = useCallback((e) => {
     if (!ref.current) return;
@@ -102,8 +104,15 @@ export default function Footer() {
               </a>
             ))}
           </div>
-          <p className="footer__onair">
-            <span className="footer__onair-dot" /> EN DIRECTO AHORA
+          <p className={"footer__onair" + (offline ? " footer__onair--off" : "")}>
+            {loading ? (
+              <span className="footer__onair-dot footer__onair-dot--loading" />
+            ) : offline ? (
+              <span className="footer__onair-dot footer__onair-dot--off" />
+            ) : (
+              <span className="footer__onair-dot" />
+            )}
+            {loading ? "CONECTANDO…" : offline ? "FUERA DEL AIRE" : "EN DIRECTO AHORA"}
           </p>
         </div>
       </div>
