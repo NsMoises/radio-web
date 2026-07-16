@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { extractYouTubeId, youtubeThumb, fetchYoutubeInfo } from "../utils/youtube-utils.js";
 import { useRanking } from "../hooks/useRanking.js";
 import { useVideos } from "../hooks/useVideos.js";
