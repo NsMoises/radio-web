@@ -28,6 +28,6 @@ jobs:
             set ftp:ssl-allow true
             set ftp:ssl-protect-data true
             open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
-            mirror --reverse --delete --verbose dist/ ${{ secrets.FTP_PATH }}
+            mirror --reverse --delete --exclude api/data/ --verbose dist/ ${{ secrets.FTP_PATH }}
             quit
           "
