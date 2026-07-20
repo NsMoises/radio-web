@@ -1499,7 +1499,7 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 }
 .candidato-card {
   background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); overflow: hidden;
+  border-radius: var(--radius); overflow: hidden; cursor: pointer;
   transition: transform .15s, border-color .15s, box-shadow .15s;
 }
 .candidato-card:hover {
@@ -1509,6 +1509,15 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 }
 .candidato-card__thumb { position: relative; aspect-ratio: 16 / 9; }
 .candidato-card__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.candidato-card__play {
+  position: absolute; inset: 0; margin: auto;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(11,8,7,0.8); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; border: 2px solid var(--accent); pointer-events: none; opacity: 0;
+  transition: opacity .2s, transform .2s;
+}
+.candidato-card:hover .candidato-card__play { opacity: 1; transform: scale(1.05); }
 .candidato-card__pos {
   position: absolute; top: 8px; left: 8px;
   background: rgba(11,8,7,0.85); color: var(--accent);

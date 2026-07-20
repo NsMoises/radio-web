@@ -8,7 +8,7 @@ import { useDjs } from "../hooks/useDjs.js";
 import { useRanking } from "../hooks/useRanking.js";
 import { useCandidatos } from "../hooks/useCandidatos.js";
 import { useVotoCandidato } from "../hooks/useVotoCandidato.js";
-import { youtubeThumb, extractYouTubeId } from "../utils/youtube-utils.js";
+import { youtubeThumb, extractYouTubeId, youtubeEmbed } from "../utils/youtube-utils.js";
 import Banner from "../components/Banner.jsx";
 import LiveCam from "../components/LiveCam.jsx";
 import MovieCard from "../components/MovieCard.jsx";
@@ -37,6 +37,7 @@ export default function Home() {
   const top20 = useMemo(() => decorateSongs(data?.songs || []), [data]);
   const top4 = top20.slice(0, 4);
   const [showPedido, setShowPedido] = useState(false);
+  const [playCandidate, setPlayCandidate] = useState(null);
 
   return (
     <div className="home">
@@ -106,7 +107,7 @@ export default function Home() {
         {cv.voteMsg && <div className="vote-toast">{cv.voteMsg}</div>}
         <div className="candidatos-grid">
           {(candidatosData?.candidatos || []).map((c) => (
-            <CandidateCard key={c.id} c={c} cv={cv} />
+            <CandidateCard key={c.id} c={c} cv={cv} onPlay={() => setPlayCandidate(c)} />
           ))}
         </div>
       </section>
@@ -161,6 +162,25 @@ export default function Home() {
         <Link to="/top-20" className="btn btn--primary btn--big">IR AL TOP 20 DE BILLBOARD →</Link>
       </section>
 
+      {/* Modal de video de candidato */}
+      {playCandidate && (
+        <div className="video-modal" onClick={() => setPlayCandidate(null)} role="dialog" aria-modal="true">
+          <div className="video-modal__inner" onClick={(e) => e.stopPropagation()}>
+            <button className="video-modal__close" onClick={() => setPlayCandidate(null)} aria-label="Cerrar">✕</button>
+            <div className="video-modal__frame">
+              <iframe key={playCandidate.id} src={youtubeEmbed(playCandidate.videoId)} title={playCandidate.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+            </div>
+            <div className="video-modal__meta">
+              <span className="video-modal__rank">#{playCandidate.position}</span>
+              <div>
+                <div className="video-modal__title">{playCandidate.title}</div>
+                <div className="video-modal__artist">{playCandidate.artist}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal de pedido musical */}
       <PedidoMusical open={showPedido} onClose={() => setShowPedido(false)} />
     </div>
@@ -169,13 +189,13 @@ export default function Home() {
 
 const THUMB_QUALITIES = ["maxresdefault", "hqdefault", "mqdefault", "default"];
 
-function CandidateCard({ c, cv }) {
+function CandidateCard({ c, cv, onPlay }) {
   const [qi, setQi] = useState(0);
   const [imgSrc, setImgSrc] = useState(youtubeThumb(c.videoId, THUMB_QUALITIES[0]));
   const count = cv.votes?.[c.id] ?? 0;
   const isMy = cv.myVote === c.id;
   return (
-    <div className="candidato-card">
+    <div className="candidato-card" onClick={onPlay} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onPlay(); }}>
       <div className="candidato-card__thumb">
         <img src={imgSrc} alt={c.title} loading="lazy" onError={() => {
           const next = qi + 1;
@@ -186,10 +206,11 @@ function CandidateCard({ c, cv }) {
             setImgSrc(c.cover);
           }
         }} />
+        <span className="candidato-card__play">▶</span>
         <span className="candidato-card__pos">#{c.position}</span>
         <button
           className={"candidato-card__vote" + (isMy ? " candidato-card__vote--done" : "")}
-          onClick={() => cv.vote(c.id)}
+          onClick={(e) => { e.stopPropagation(); cv.vote(c.id); }}
           title={isMy ? "Retirar voto" : "Votar"}
           aria-label="Votar"
         >
