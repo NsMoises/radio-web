@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import candidatosFallback from "../data/candidatos.json";
 
 const API = "/api/candidatos.php";
 const LS_KEY = "radio-web:candidatos:backup";
@@ -25,9 +26,9 @@ export function useCandidatos() {
         const ls = localStorage.getItem(LS_KEY);
         if (ls) { const j = JSON.parse(ls); if (j && Array.isArray(j.candidatos) && j.candidatos.length > 0) { setData(j); setError("offline"); return j; } }
       } catch {}
-      setData(null);
+      setData(candidatosFallback);
       setError("offline");
-      return null;
+      return candidatosFallback;
     } finally {
       setLoading(false);
     }
@@ -41,11 +42,19 @@ export function useCandidatos() {
   }, [load]);
 
   const save = useCallback(async (newData) => {
-    const res = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newData) });
-    const json = await res.json();
-    if (json.ok) { window.dispatchEvent(new CustomEvent(EV_KEY)); }
-    return json;
-  }, []);
+    try {
+      const res = await fetch(API, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newData) });
+      const json = await res.json();
+      if (!res.ok || !json.ok) throw new Error(json.error || "Error al guardar");
+      await load();
+      window.dispatchEvent(new CustomEvent(EV_KEY));
+      return { ok: true };
+    } catch (e) {
+      try { localStorage.setItem(LS_KEY, JSON.stringify(newData)); } catch {}
+      setData(newData);
+      return { ok: false, offline: true, error: String(e?.message || e) };
+    }
+  }, [load]);
 
   return { data, loading, error, save };
 }

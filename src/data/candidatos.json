@@ -1,0 +1,10 @@
+{
+  "weekLabel": "Candidatos de la semana",
+  "candidatos": [
+    { "id": 1,  "position": 1,  "title": "Nueva Ola",           "artist": "Maz Gazzie",     "videoId": "dQw4w9WgXcQ", "cover": "https://picsum.photos/seed/cand1/400/225" },
+    { "id": 2,  "position": 2,  "title": "Ritmo del Alma",       "artist": "Los Viajeros",   "videoId": "dQw4w9WgXcQ", "cover": "https://picsum.photos/seed/cand2/400/225" },
+    { "id": 3,  "position": 3,  "title": "Luces en la Ciudad",   "artist": "Marina Soler",   "videoId": "dQw4w9WgXcQ", "cover": "https://picsum.photos/seed/cand3/400/225" },
+    { "id": 4,  "position": 4,  "title": "Bajo el Cielo",        "artist": "Trío Alba",      "videoId": "dQw4w9WgXcQ", "cover": "https://picsum.photos/seed/cand4/400/225" },
+    { "id": 5,  "position": 5,  "title": "Último Amanecer",      "artist": "Cobre",          "videoId": "dQw4w9WgXcQ", "cover": "https://picsum.photos/seed/cand5/400/225" }
+  ]
+}

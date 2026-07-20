@@ -837,30 +837,84 @@ function EditorCandidatos() {
   const [weekLabel, setWeekLabel] = useState("");
   const [status, setStatus] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [fetchingIds, setFetchingIds] = useState(new Set());
+  const fetchedRef = useRef(new Set());
 
   useEffect(() => {
     if (!data) return;
-    setRows(data.candidatos.map((c, i) => ({ ...c, id: i + 1 })));
+    setRows(data.candidatos.map((c, i) => ({ ...c, id: i + 1, videoId: c.videoId || extractYouTubeId(c.url) || "" })));
     setWeekLabel(data.weekLabel || "");
   }, [data]);
 
+  useEffect(() => {
+    const toFetch = [];
+    for (const r of rows) {
+      if (!r.videoId || r.videoId.length < 11) continue;
+      if (fetchedRef.current.has(r.videoId)) continue;
+      toFetch.push(r);
+    }
+    if (toFetch.length === 0) return;
+    toFetch.forEach((r) => {
+      fetchedRef.current.add(r.videoId);
+      setFetchingIds((prev) => new Set([...prev, r.id]));
+      fetchYoutubeInfo(r.videoId).then((info) => {
+        setFetchingIds((prev) => { const next = new Set(prev); next.delete(r.id); return next; });
+        if (!info) return;
+        setRows((rs) => rs.map((row) => {
+          if (row.id !== r.id) return row;
+          return { ...row, title: info.title || row.title || "", artist: info.artist || row.artist || "" };
+        }));
+      });
+    });
+  }, [rows]);
+
   const update = (id, field, value) => setRows((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
 
-  const addRow = () => setRows((rs) => [...rs, { id: Date.now(), position: rs.length + 1, title: "", artist: "", videoId: "", cover: "" }]);
+  const fetchNow = async (r) => {
+    if (!r.videoId || r.videoId.length < 11) return;
+    setFetchingIds((prev) => new Set([...prev, r.id]));
+    const info = await fetchYoutubeInfo(r.videoId);
+    setFetchingIds((prev) => { const next = new Set(prev); next.delete(r.id); return next; });
+    if (!info) { alert("No se pudo obtener info del video."); return; }
+    setRows((rs) => rs.map((row) => {
+      if (row.id !== r.id) return row;
+      return { ...row, title: info.title || row.title, artist: info.artist || row.artist };
+    }));
+  };
 
-  const removeRow = (id) => setRows((rs) => rs.filter((r) => r.id !== id).map((r, i) => ({ ...r, position: i + 1 })));
+  const move = (index, dir) => setRows((rs) => {
+    const next = [...rs];
+    const j = index + dir;
+    if (j < 0 || j >= next.length) return rs;
+    [next[index], next[j]] = [next[j], next[index]];
+    next.forEach((r, i) => { r.position = i + 1; });
+    return next;
+  });
+
+  const addEmpty = () => {
+    setRows((rs) => {
+      const maxId = rs.reduce((m, r) => Math.max(m, r.id || 0), 0);
+      return [...rs, { id: maxId + 1, position: rs.length + 1, title: "", artist: "", videoId: "", cover: "" }];
+    });
+  };
+
+  const removeRow = (id) => {
+    if (!confirm("¿Eliminar este candidato?")) return;
+    setRows((rs) => rs.filter((r) => r.id !== id).map((r, i) => ({ ...r, position: i + 1 })));
+  };
 
   const handleSave = async () => {
+    if (saving) return;
     setSaving(true); setStatus(null);
     const payload = { weekLabel, candidatos: rows.map((r, i) => ({ ...r, position: i + 1, id: i + 1 })) };
     const res = await save(payload);
     setSaving(false);
-    if (res.ok) { setStatus("ok"); setTimeout(() => setStatus(null), 3000); }
-    else { setStatus("error: " + (res.error || "desconocido")); }
+    if (res.ok) setStatus({ ok: true, msg: "✓ Guardado. Los candidatos están actualizados." });
+    else if (res.offline) setStatus({ ok: false, msg: "⚠ Sin backend PHP: guardado solo en este navegador." });
+    else setStatus({ ok: false, msg: "✕ Error: " + (res.error || "no se pudo guardar") });
   };
 
   if (loading) return <p style={{ color: "var(--text-dim)" }}>Cargando candidatos…</p>;
-  if (error && !data) return <p style={{ color: "var(--text-dim)" }}>No hay candidatos. Crea el primer candidato.</p>;
 
   return (
     <>
@@ -868,39 +922,51 @@ function EditorCandidatos() {
         <div>
           <h1>Candidatos — Próxima semana</h1>
           <p>{rows.length} candidatos</p>
+          {error === "offline" && <p className="panel__offline">⚠ Sin backend: cambios solo locales</p>}
         </div>
         <div className="panel__actions">
           <span style={{ fontSize: "0.82rem", color: "var(--text-dim)" }}>
             <label>Etiqueta: <input type="text" value={weekLabel} onChange={(e) => setWeekLabel(e.target.value)} style={{ width: 200, padding: "4px 8px", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 4, color: "var(--text)" }} placeholder="Ej: Candidatos de la semana" /></label>
           </span>
-          <button className="btn btn--ghost btn--small" onClick={addRow}>➕ Añadir</button>
-          <button className="btn btn--primary btn--small" onClick={handleSave} disabled={saving}>{saving ? "Guardando…" : "💾 Guardar"}</button>
-          {status === "ok" && <span className="panel__ok">✔ Guardado</span>}
-          {status && status !== "ok" && <span style={{ color: "var(--down)", fontSize: "0.85rem" }}>{status}</span>}
+          <button className="btn btn--ghost btn--small" onClick={addEmpty}>➕ Añadir</button>
+          <button className="btn btn--primary" onClick={handleSave} disabled={saving}>{saving ? "Guardando…" : "💾 Guardar cambios"}</button>
         </div>
       </header>
-
+      <div className="panel__hint"><strong>Cómo usar:</strong> pega el link de YouTube — título, artista y miniatura se rellenan solos. Usa ▲▼ para reordenar.</div>
+      {status && <div className={"panel__status" + (status.ok ? " panel__status--ok" : " panel__status--warn")}>{status.msg}</div>}
       <div className="panel__list">
-        {rows.map((r, i) => (
-          <div className="panel-row" key={r.id}>
-            <div className="panel-row__pos">
-              <span className="panel-row__order">#{i + 1}</span>
-            </div>
-            <div className="panel-row__fields" style={{ gridColumn: "2 / -1" }}>
-              <div className="panel-row__row--top" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <input type="text" value={r.title} onChange={(e) => update(r.id, "title", e.target.value)} placeholder="Título" className="panel-input--lg" style={{ flex: 2, minWidth: 140 }} />
-                <input type="text" value={r.artist} onChange={(e) => update(r.id, "artist", e.target.value)} placeholder="Artista" style={{ flex: 1, minWidth: 120 }} />
+        {rows.map((r, i) => {
+          const thumb = youtubeThumb(r.videoId);
+          return (
+            <div className="panel-row" key={r.id || i}>
+              <div className="panel-row__pos">
+                <span className="panel-row__num">#{i + 1}</span>
+                <div className="panel-row__arrows">
+                  <button onClick={() => move(i, -1)} disabled={i === 0} title="Subir">▲</button>
+                  <button onClick={() => move(i, 1)} disabled={i === rows.length - 1} title="Bajar">▼</button>
+                  <button className="panel-row__remove" onClick={() => removeRow(r.id)} title="Eliminar">✕</button>
+                </div>
               </div>
-              <div className="panel-row__row" style={{ marginTop: 6 }}>
-                <input type="text" value={r.videoId} onChange={(e) => update(r.id, "videoId", e.target.value)} placeholder="ID de YouTube (ej: dQw4w9WgXcQ)" style={{ flex: 1, minWidth: 180 }} />
-                <input type="url" value={r.cover} onChange={(e) => update(r.id, "cover", e.target.value)} placeholder="URL de portada (opcional)" style={{ flex: 1, minWidth: 180 }} />
-                <button className="btn btn--ghost btn--small" onClick={() => removeRow(r.id)} style={{ color: "var(--down)" }}>✕</button>
+              <div className="panel-row__thumb">
+                {thumb ? <><img src={thumb} alt="" onError={(e) => { e.target.style.display = "none"; }} /><span className="panel-row__play" aria-hidden="true" /></> : <span className="panel-row__nothumb">sin thumbnail</span>}
+              </div>
+              <div className="panel-row__fields">
+                <input type="text" value={r.title || ""} onChange={(e) => update(r.id, "title", e.target.value)} placeholder="Título del candidato" />
+                <input type="text" value={r.artist || ""} onChange={(e) => update(r.id, "artist", e.target.value)} placeholder="Artista / Banda" />
+                <div className="panel-row__row">
+                  <input type="text" value={r.videoId || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw) || raw; update(r.id, "videoId", extracted); }} placeholder="Pega el link de YouTube o ID del vídeo" style={{ flex: 1 }} />
+                  {fetchingIds.has(r.id) ? <span title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(r)} title="Obtener título y artista desde YouTube" style={{ fontSize: "0.9rem", padding: "2px 8px" }}>🔄</button>}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+        {rows.length === 0 && <p style={{ color: "var(--text-mute)", padding: 16 }}>No hay candidatos. Pulsa "➕ Añadir" para agregar el primero.</p>}
       </div>
-      {rows.length === 0 && <p style={{ color: "var(--text-mute)", padding: 16 }}>No hay candidatos. Pulsa "➕ Añadir" para agregar el primero.</p>}
+      <footer className="panel__foot">
+        <button className="btn btn--ghost btn--small" onClick={addEmpty}>➕ Añadir candidato</button>
+        <button className="btn btn--primary btn--big" onClick={handleSave} disabled={saving}>{saving ? "Guardando…" : "💾 Guardar cambios"}</button>
+      </footer>
     </>
   );
 }
