@@ -693,6 +693,9 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 }
 
 .panel-row__fields { display: flex; flex-direction: column; gap: 8px; }
+.panel-row__fields--compact { gap: 6px; }
+.panel-row__fields--compact .panel-row__row input { padding: 6px 10px; font-size: 0.82rem; flex: 1; min-width: 80px; }
+.panel-row__fields--compact .panel-row__row { gap: 6px; }
 .panel-row__fields input[type="text"],
 .panel-row__fields input[type="url"] {
   padding: 8px 12px; background: var(--bg); border: 1px solid var(--border);

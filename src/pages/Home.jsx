@@ -8,7 +8,7 @@ import { useDjs } from "../hooks/useDjs.js";
 import { useRanking } from "../hooks/useRanking.js";
 import { useCandidatos } from "../hooks/useCandidatos.js";
 import { useVotoCandidato } from "../hooks/useVotoCandidato.js";
-import { youtubeThumb } from "../utils/youtube-utils.js";
+import { youtubeThumb, extractYouTubeId } from "../utils/youtube-utils.js";
 import Banner from "../components/Banner.jsx";
 import MovieCard from "../components/MovieCard.jsx";
 import TopPreviewCard from "../components/TopPreviewCard.jsx";
@@ -104,31 +104,9 @@ export default function Home() {
         </div>
         {cv.voteMsg && <div className="vote-toast">{cv.voteMsg}</div>}
         <div className="candidatos-grid">
-          {(candidatosData?.candidatos || []).map((c) => {
-            const count = cv.votes?.[c.id] ?? 0;
-            const isMy = cv.myVote === c.id;
-            return (
-              <div className="candidato-card" key={c.id}>
-                <div className="candidato-card__thumb">
-                  <img src={c.cover || youtubeThumb(c.videoId)} alt={c.title} loading="lazy" />
-                  <span className="candidato-card__pos">#{c.position}</span>
-                  <button
-                    className={"candidato-card__vote" + (isMy ? " candidato-card__vote--done" : "")}
-                    onClick={() => cv.vote(c.id)}
-                    title={isMy ? "Retirar voto" : "Votar"}
-                    aria-label="Votar"
-                  >
-                    {isMy ? "❤" : "♡"}
-                    {count > 0 && <span className="candidato-card__vote-count">{count}</span>}
-                  </button>
-                </div>
-                <div className="candidato-card__body">
-                  <div className="candidato-card__title">{c.title}</div>
-                  <div className="candidato-card__artist">{c.artist}</div>
-                </div>
-              </div>
-            );
-          })}
+          {(candidatosData?.candidatos || []).map((c) => (
+            <CandidateCard key={c.id} c={c} cv={cv} />
+          ))}
         </div>
       </section>
 
@@ -181,6 +159,36 @@ export default function Home() {
 
       {/* Modal de pedido musical */}
       <PedidoMusical open={showPedido} onClose={() => setShowPedido(false)} />
+    </div>
+  );
+}
+
+const THUMB_QUALITIES = ["maxresdefault", "hqdefault", "mqdefault", "default"];
+
+function CandidateCard({ c, cv }) {
+  const [qi, setQi] = useState(0);
+  const count = cv.votes?.[c.id] ?? 0;
+  const isMy = cv.myVote === c.id;
+  const thumbSrc = c.cover || youtubeThumb(c.videoId, THUMB_QUALITIES[qi]);
+  return (
+    <div className="candidato-card">
+      <div className="candidato-card__thumb">
+        <img src={thumbSrc} alt={c.title} loading="lazy" onError={() => setQi((i) => Math.min(i + 1, THUMB_QUALITIES.length - 1))} />
+        <span className="candidato-card__pos">#{c.position}</span>
+        <button
+          className={"candidato-card__vote" + (isMy ? " candidato-card__vote--done" : "")}
+          onClick={() => cv.vote(c.id)}
+          title={isMy ? "Retirar voto" : "Votar"}
+          aria-label="Votar"
+        >
+          {isMy ? "❤" : "♡"}
+          {count > 0 && <span className="candidato-card__vote-count">{count}</span>}
+        </button>
+      </div>
+      <div className="candidato-card__body">
+        <div className="candidato-card__title">{c.title}</div>
+        <div className="candidato-card__artist">{c.artist}</div>
+      </div>
     </div>
   );
 }

@@ -950,12 +950,14 @@ function EditorCandidatos() {
               <div className="panel-row__thumb">
                 {thumb ? <><img src={thumb} alt="" onError={(e) => { e.target.style.display = "none"; }} /><span className="panel-row__play" aria-hidden="true" /></> : <span className="panel-row__nothumb">sin thumbnail</span>}
               </div>
-              <div className="panel-row__fields">
-                <input type="text" value={r.title || ""} onChange={(e) => update(r.id, "title", e.target.value)} placeholder="Título del candidato" />
-                <input type="text" value={r.artist || ""} onChange={(e) => update(r.id, "artist", e.target.value)} placeholder="Artista / Banda" />
+              <div className="panel-row__fields panel-row__fields--compact">
                 <div className="panel-row__row">
-                  <input type="text" value={r.videoId || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw) || raw; update(r.id, "videoId", extracted); }} placeholder="Pega el link de YouTube o ID del vídeo" style={{ flex: 1 }} />
-                  {fetchingIds.has(r.id) ? <span title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(r)} title="Obtener título y artista desde YouTube" style={{ fontSize: "0.9rem", padding: "2px 8px" }}>🔄</button>}
+                  <input type="text" value={r.title || ""} onChange={(e) => update(r.id, "title", e.target.value)} placeholder="Título" />
+                  <input type="text" value={r.artist || ""} onChange={(e) => update(r.id, "artist", e.target.value)} placeholder="Artista" />
+                </div>
+                <div className="panel-row__row">
+                  <input type="text" value={r.videoId || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw) || raw; update(r.id, "videoId", extracted); }} placeholder="Link o ID de YouTube" style={{ flex: 1 }} />
+                  {fetchingIds.has(r.id) ? <span title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(r)} title="Obtener título y artista desde YouTube">🔄</button>}
                 </div>
               </div>
             </div>
