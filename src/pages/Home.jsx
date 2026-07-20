@@ -167,13 +167,21 @@ const THUMB_QUALITIES = ["maxresdefault", "hqdefault", "mqdefault", "default"];
 
 function CandidateCard({ c, cv }) {
   const [qi, setQi] = useState(0);
+  const [imgSrc, setImgSrc] = useState(youtubeThumb(c.videoId, THUMB_QUALITIES[0]));
   const count = cv.votes?.[c.id] ?? 0;
   const isMy = cv.myVote === c.id;
-  const thumbSrc = c.cover || youtubeThumb(c.videoId, THUMB_QUALITIES[qi]);
   return (
     <div className="candidato-card">
       <div className="candidato-card__thumb">
-        <img src={thumbSrc} alt={c.title} loading="lazy" onError={() => setQi((i) => Math.min(i + 1, THUMB_QUALITIES.length - 1))} />
+        <img src={imgSrc} alt={c.title} loading="lazy" onError={() => {
+          const next = qi + 1;
+          if (next < THUMB_QUALITIES.length) {
+            setQi(next);
+            setImgSrc(youtubeThumb(c.videoId, THUMB_QUALITIES[next]));
+          } else if (c.cover) {
+            setImgSrc(c.cover);
+          }
+        }} />
         <span className="candidato-card__pos">#{c.position}</span>
         <button
           className={"candidato-card__vote" + (isMy ? " candidato-card__vote--done" : "")}
