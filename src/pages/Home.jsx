@@ -10,6 +10,7 @@ import { useCandidatos } from "../hooks/useCandidatos.js";
 import { useVotoCandidato } from "../hooks/useVotoCandidato.js";
 import { youtubeThumb, extractYouTubeId } from "../utils/youtube-utils.js";
 import Banner from "../components/Banner.jsx";
+import LiveCam from "../components/LiveCam.jsx";
 import MovieCard from "../components/MovieCard.jsx";
 import TopPreviewCard from "../components/TopPreviewCard.jsx";
 import PedidoMusical from "../components/PedidoMusical.jsx";
@@ -109,6 +110,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* CÁMARA EN VIVO */}
+      <LiveCam />
 
       {/* ESPECIALES DEL MES */}
       <section className="block">
