@@ -7,6 +7,7 @@ import { usePremieres } from "../hooks/usePremieres.js";
 import { useSpecials } from "../hooks/useSpecials.js";
 import { useBanner } from "../hooks/useBanner.js";
 import { useDjs } from "../hooks/useDjs.js";
+import { useCandidatos } from "../hooks/useCandidatos.js";
 import { downloadJson, uploadImage } from "../utils/panel-utils.js";
 import ImgPreview from "../components/ImgPreview.jsx";
 
@@ -830,6 +831,80 @@ function EditorVotaciones() {
   );
 }
 
+function EditorCandidatos() {
+  const { data, loading, error, save } = useCandidatos();
+  const [rows, setRows] = useState([]);
+  const [weekLabel, setWeekLabel] = useState("");
+  const [status, setStatus] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!data) return;
+    setRows(data.candidatos.map((c, i) => ({ ...c, id: i + 1 })));
+    setWeekLabel(data.weekLabel || "");
+  }, [data]);
+
+  const update = (id, field, value) => setRows((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+
+  const addRow = () => setRows((rs) => [...rs, { id: Date.now(), position: rs.length + 1, title: "", artist: "", videoId: "", cover: "" }]);
+
+  const removeRow = (id) => setRows((rs) => rs.filter((r) => r.id !== id).map((r, i) => ({ ...r, position: i + 1 })));
+
+  const handleSave = async () => {
+    setSaving(true); setStatus(null);
+    const payload = { weekLabel, candidatos: rows.map((r, i) => ({ ...r, position: i + 1, id: i + 1 })) };
+    const res = await save(payload);
+    setSaving(false);
+    if (res.ok) { setStatus("ok"); setTimeout(() => setStatus(null), 3000); }
+    else { setStatus("error: " + (res.error || "desconocido")); }
+  };
+
+  if (loading) return <p style={{ color: "var(--text-dim)" }}>Cargando candidatos…</p>;
+  if (error && !data) return <p style={{ color: "var(--text-dim)" }}>No hay candidatos. Crea el primer candidato.</p>;
+
+  return (
+    <>
+      <header className="panel__head">
+        <div>
+          <h1>Candidatos — Próxima semana</h1>
+          <p>{rows.length} candidatos</p>
+        </div>
+        <div className="panel__actions">
+          <span style={{ fontSize: "0.82rem", color: "var(--text-dim)" }}>
+            <label>Etiqueta: <input type="text" value={weekLabel} onChange={(e) => setWeekLabel(e.target.value)} style={{ width: 200, padding: "4px 8px", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 4, color: "var(--text)" }} placeholder="Ej: Candidatos de la semana" /></label>
+          </span>
+          <button className="btn btn--ghost btn--small" onClick={addRow}>➕ Añadir</button>
+          <button className="btn btn--primary btn--small" onClick={handleSave} disabled={saving}>{saving ? "Guardando…" : "💾 Guardar"}</button>
+          {status === "ok" && <span className="panel__ok">✔ Guardado</span>}
+          {status && status !== "ok" && <span style={{ color: "var(--down)", fontSize: "0.85rem" }}>{status}</span>}
+        </div>
+      </header>
+
+      <div className="panel__list">
+        {rows.map((r, i) => (
+          <div className="panel-row" key={r.id}>
+            <div className="panel-row__pos">
+              <span className="panel-row__order">#{i + 1}</span>
+            </div>
+            <div className="panel-row__fields" style={{ gridColumn: "2 / -1" }}>
+              <div className="panel-row__row--top" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <input type="text" value={r.title} onChange={(e) => update(r.id, "title", e.target.value)} placeholder="Título" className="panel-input--lg" style={{ flex: 2, minWidth: 140 }} />
+                <input type="text" value={r.artist} onChange={(e) => update(r.id, "artist", e.target.value)} placeholder="Artista" style={{ flex: 1, minWidth: 120 }} />
+              </div>
+              <div className="panel-row__row" style={{ marginTop: 6 }}>
+                <input type="text" value={r.videoId} onChange={(e) => update(r.id, "videoId", e.target.value)} placeholder="ID de YouTube (ej: dQw4w9WgXcQ)" style={{ flex: 1, minWidth: 180 }} />
+                <input type="url" value={r.cover} onChange={(e) => update(r.id, "cover", e.target.value)} placeholder="URL de portada (opcional)" style={{ flex: 1, minWidth: 180 }} />
+                <button className="btn btn--ghost btn--small" onClick={() => removeRow(r.id)} style={{ color: "var(--down)" }}>✕</button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {rows.length === 0 && <p style={{ color: "var(--text-mute)", padding: 16 }}>No hay candidatos. Pulsa "➕ Añadir" para agregar el primero.</p>}
+    </>
+  );
+}
+
 export default function Panel() {
   const [authed, setAuthed] = useState(null);
   const [pwd, setPwd] = useState("");
@@ -898,6 +973,7 @@ export default function Panel() {
         <button className={"panel__tab" + (tab === "specials" ? " panel__tab--active" : "")} onClick={() => setTab("specials")} role="tab" aria-selected={tab === "specials"}>Especiales</button>
         <button className={"panel__tab" + (tab === "banner" ? " panel__tab--active" : "")} onClick={() => setTab("banner")} role="tab" aria-selected={tab === "banner"}>Banner</button>
         <button className={"panel__tab" + (tab === "djs" ? " panel__tab--active" : "")} onClick={() => setTab("djs")} role="tab" aria-selected={tab === "djs"}>Locutores</button>
+        <button className={"panel__tab" + (tab === "candidatos" ? " panel__tab--active" : "")} onClick={() => setTab("candidatos")} role="tab" aria-selected={tab === "candidatos"}>🎯 Candidatos</button>
         <button className={"panel__tab" + (tab === "votos" ? " panel__tab--active" : "")} onClick={() => setTab("votos")} role="tab" aria-selected={tab === "votos"}>🗳️ Votaciones</button>
         <div className="panel__tab-logout">
           <button className="btn btn--ghost btn--small panel__logout" onClick={logout} title="Cerrar sesión">⏻ Salir</button>
@@ -910,6 +986,7 @@ export default function Panel() {
       {tab === "specials" && <EditorEspeciales />}
       {tab === "banner" && <EditorBanner />}
       {tab === "djs" && <EditorDjs />}
+      {tab === "candidatos" && <EditorCandidatos />}
       {tab === "votos" && <EditorVotaciones />}
 
       <section className="panel__docs">

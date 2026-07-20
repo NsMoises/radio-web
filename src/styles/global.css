@@ -1490,6 +1490,56 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
   .topp20-mini-grid { grid-template-columns: 1fr; }
 }
 
+/* ===== Candidatos para proxima semana ===== */
+.candidatos-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
+}
+.candidato-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  transition: transform .15s, border-color .15s, box-shadow .15s;
+}
+.candidato-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-dim);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+}
+.candidato-card__thumb { position: relative; aspect-ratio: 16 / 9; }
+.candidato-card__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.candidato-card__pos {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(11,8,7,0.85); color: var(--accent);
+  font-family: var(--font-serif); font-weight: 700;
+  padding: 3px 9px; border-radius: 5px; font-size: 0.85rem;
+}
+.candidato-card__vote {
+  position: absolute; bottom: 8px; right: 8px;
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(11,8,7,0.85);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 20px; padding: 4px 10px 4px 8px;
+  cursor: pointer; font-size: 0.9rem; color: var(--text-dim);
+  transition: all 0.2s; z-index: 2;
+  line-height: 1;
+}
+.candidato-card__vote:hover { border-color: var(--accent); background: rgba(0,229,255,0.25); }
+.candidato-card__vote--done { color: #ff3b5c; border-color: rgba(255,59,92,0.4); }
+.candidato-card__vote-count { font-size: 0.78rem; font-weight: 700; min-width: 8px; text-align: center; }
+.candidato-card__body { padding: 10px 12px 12px; }
+.candidato-card__title {
+  font-weight: 600; font-size: 0.92rem; line-height: 1.25;
+  color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.candidato-card__artist { color: var(--text-dim); font-size: 0.82rem; margin-top: 2px; }
+
+@media (max-width: 900px) {
+  .candidatos-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 560px) {
+  .candidatos-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* ===== Footer moderno ===== */
 .footer { position: relative; background: var(--bg-2); padding: 48px 20px 0; }
 .footer__glow {

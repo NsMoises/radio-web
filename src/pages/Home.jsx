@@ -6,6 +6,9 @@ import { useSpecials } from "../hooks/useSpecials.js";
 import { useBanner } from "../hooks/useBanner.js";
 import { useDjs } from "../hooks/useDjs.js";
 import { useRanking } from "../hooks/useRanking.js";
+import { useCandidatos } from "../hooks/useCandidatos.js";
+import { useVotoCandidato } from "../hooks/useVotoCandidato.js";
+import { youtubeThumb } from "../utils/youtube-utils.js";
 import Banner from "../components/Banner.jsx";
 import MovieCard from "../components/MovieCard.jsx";
 import TopPreviewCard from "../components/TopPreviewCard.jsx";
@@ -19,6 +22,8 @@ export default function Home() {
   const { data: specialsData } = useSpecials();
   const { data: djsData } = useDjs();
   const { data } = useRanking();
+  const { data: candidatosData } = useCandidatos();
+  const cv = useVotoCandidato();
 
   const latestNews = newsData?.articles?.slice(0, 3) || [];
   const premieres = premieresData?.premieres || [];
@@ -88,6 +93,42 @@ export default function Home() {
               <TopPreviewCard song={s} />
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* CANDIDATOS PROXIMA SEMANA */}
+      <section className="block">
+        <div className="block__head">
+          <h2 className="block__title">Candidatos para la próxima semana</h2>
+          <span className="block__link block__link--muted">{candidatosData?.candidatos?.length || 0} candidatos</span>
+        </div>
+        {cv.voteMsg && <div className="vote-toast">{cv.voteMsg}</div>}
+        <div className="candidatos-grid">
+          {(candidatosData?.candidatos || []).map((c) => {
+            const count = cv.votes?.[c.id] ?? 0;
+            const isMy = cv.myVote === c.id;
+            return (
+              <div className="candidato-card" key={c.id}>
+                <div className="candidato-card__thumb">
+                  <img src={c.cover || youtubeThumb(c.videoId)} alt={c.title} loading="lazy" />
+                  <span className="candidato-card__pos">#{c.position}</span>
+                  <button
+                    className={"candidato-card__vote" + (isMy ? " candidato-card__vote--done" : "")}
+                    onClick={() => cv.vote(c.id)}
+                    title={isMy ? "Retirar voto" : "Votar"}
+                    aria-label="Votar"
+                  >
+                    {isMy ? "❤" : "♡"}
+                    {count > 0 && <span className="candidato-card__vote-count">{count}</span>}
+                  </button>
+                </div>
+                <div className="candidato-card__body">
+                  <div className="candidato-card__title">{c.title}</div>
+                  <div className="candidato-card__artist">{c.artist}</div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
