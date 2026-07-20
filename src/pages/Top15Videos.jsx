@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useVideos } from "../hooks/useVideos.js";
-import { useVotos } from "../hooks/useVotos.js";
+import { useVotoVideo } from "../hooks/useVotoVideo.js";
 import { decorateSongs } from "../utils/ranking-utils";
 import { extractYouTubeId, youtubeEmbed } from "../utils/youtube-utils.js";
 import { weekRangeLabel } from "../utils/date-utils.js";
@@ -25,7 +25,7 @@ function videoToSong(v, fallbackDate) {
 
 export default function Top15Videos() {
   const { data: videosData, loading } = useVideos();
-  const { votes, myVote, vote, voteMsg } = useVotos();
+  const { votes, myVote, vote, voteMsg } = useVotoVideo();
   const videos = videosData?.videos || [];
   const cols = COLS;
 

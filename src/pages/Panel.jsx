@@ -753,6 +753,52 @@ function EditorDjs() {
   );
 }
 
+const CAT_ICONS = { top20: "🎵", top15: "🎬", candidatos: "⭐" };
+
+function VotacionCategory({ icon, label, results, expanded, onToggle }) {
+  if (results.length === 0) return null;
+  const maxVotes = results[0].total;
+  return (
+    <div className="votaciones-category">
+      <h2 className="votaciones-category__title">{icon} {label}</h2>
+      <div className="votaciones">
+        {results.map((item, idx) => {
+          const pct = Math.round((item.total / maxVotes) * 100);
+          const isOpen = expanded[item.id];
+          return (
+            <div className={"votacion-card" + (isOpen ? " votacion-card--open" : "")} key={item.id}>
+              <div className="votacion-card__head" onClick={() => onToggle(item.id)}>
+                <span className="votacion-card__rank">#{idx + 1}</span>
+                <div className="votacion-card__info">
+                  <div className="votacion-card__title">{item.title}</div>
+                  <div className="votacion-card__artist">{item.artist}</div>
+                </div>
+                <div className="votacion-card__bar-wrap">
+                  <div className="votacion-card__bar" style={{ width: pct + "%" }} />
+                </div>
+                <span className="votacion-card__count">{item.total}</span>
+                <span className="votacion-card__arrow">{isOpen ? "▲" : "▼"}</span>
+              </div>
+              {isOpen && (
+                <div className="votacion-card__voters">
+                  <div className="votacion-card__voters-title">Votantes ({item.voters.length})</div>
+                  {item.voters.map((v, i) => (
+                    <div className="votacion-voter" key={i}>
+                      <span className="votacion-voter__icon">❤</span>
+                      <span className="votacion-voter__name">{v.nombre}</span>
+                      <span className="votacion-voter__date">{v.date}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function EditorVotaciones() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -768,64 +814,43 @@ function EditorVotaciones() {
 
   useEffect(() => { load(); }, [load]);
 
+  const toggle = (id) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
+
   if (loading) return <p style={{ color: "var(--text-dim)" }}>Cargando votaciones…</p>;
   if (!data || !data.ok) return <p style={{ color: "var(--text-dim)" }}>No hay votaciones o no se pudieron cargar.</p>;
 
-  const results = data.results || [];
-  const maxVotes = results.length > 0 ? results[0].total : 1;
+  const cats = data.categories || {};
+  const catsWithVotes = Object.values(cats).filter((c) => c.totalVotes > 0);
 
   return (
     <>
       <header className="panel__head">
         <div>
           <h1>Votaciones del público</h1>
-          <p>{data.totalVotes || 0} votos totales · {results.length} canciones votadas</p>
+          <p>{data.totalVotes || 0} votos totales</p>
         </div>
         <div className="panel__actions">
           <button className="btn btn--ghost btn--small" onClick={load} title="Actualizar">🔄 Actualizar</button>
         </div>
       </header>
 
-      {results.length === 0 && (
+      {catsWithVotes.length === 0 ? (
         <p className="panel__empty">Aún no hay votos. Cuando los oyentes voten, aparecerán aquí.</p>
-      )}
-
-      {results.length > 0 && (
-        <div className="votaciones">
-          {results.map((song, idx) => {
-            const pct = Math.round((song.total / maxVotes) * 100);
-            const isOpen = expanded[song.songId];
-            return (
-              <div className={"votacion-card" + (isOpen ? " votacion-card--open" : "")} key={song.songId}>
-                <div className="votacion-card__head" onClick={() => setExpanded((e) => ({ ...e, [song.songId]: !e[song.songId] }))}>
-                  <span className="votacion-card__rank">#{idx + 1}</span>
-                  <div className="votacion-card__info">
-                    <div className="votacion-card__title">{song.title}</div>
-                    <div className="votacion-card__artist">{song.artist}</div>
-                  </div>
-                  <div className="votacion-card__bar-wrap">
-                    <div className="votacion-card__bar" style={{ width: pct + "%" }} />
-                  </div>
-                  <span className="votacion-card__count">{song.total}</span>
-                  <span className="votacion-card__arrow">{isOpen ? "▲" : "▼"}</span>
-                </div>
-
-                {isOpen && (
-                  <div className="votacion-card__voters">
-                    <div className="votacion-card__voters-title">Votantes ({song.voters.length})</div>
-                    {song.voters.map((v, i) => (
-                      <div className="votacion-voter" key={i}>
-                        <span className="votacion-voter__icon">❤</span>
-                        <span className="votacion-voter__name">{v.nombre}</span>
-                        <span className="votacion-voter__date">{v.date}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+      ) : (
+        ["top20", "top15", "candidatos"].map((key) => {
+          const cat = cats[key];
+          if (!cat || cat.results.length === 0) return null;
+          return (
+            <VotacionCategory
+              key={key}
+              icon={CAT_ICONS[key]}
+              label={cat.label}
+              results={cat.results}
+              expanded={expanded}
+              onToggle={toggle}
+            />
+          );
+        })
       )}
     </>
   );

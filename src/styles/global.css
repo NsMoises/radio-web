@@ -750,6 +750,11 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 }
 
 /* ===== Votaciones (Panel admin) ===== */
+.votaciones-category { margin-bottom: 32px; }
+.votaciones-category__title {
+  font-size: 1rem; font-weight: 600; margin: 0 0 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
 .votaciones { display: flex; flex-direction: column; gap: 10px; }
 .votacion-card {
   background: var(--bg-card); border: 1px solid var(--border);
