@@ -14,8 +14,18 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") { http_response_code(204); exit; }
 if (!is_dir(DATA_DIR)) { @mkdir(DATA_DIR, 0775, true); }
 
 if ($_SERVER["REQUEST_METHOD"] === "GET") {
-  if (!file_exists(DATA_FILE)) { http_response_code(404); echo json_encode(["ok" => false, "error" => "banner.json no existe"]); exit; }
-  readfile(DATA_FILE); exit;
+  if (!file_exists(DATA_FILE)) {
+    $defaults = [
+      "seasonLabel" => "Temporada actual",
+      "slides" => [
+        ["id" => 1, "image" => "", "title" => "Bienvenido a la radio", "subtitle" => "La mejor música 24/7", "season" => ""],
+        ["id" => 2, "image" => "", "title" => "Música sin pausa", "subtitle" => "Programación en vivo todo el día", "season" => ""]
+      ]
+    ];
+    file_put_contents(DATA_FILE, json_encode($defaults, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+  }
+  readfile(DATA_FILE);
+  exit;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -36,7 +46,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   unset($s);
   $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   $ok = file_put_contents(DATA_FILE, $json);
-  if ($ok === false) { http_response_code(500); echo json_encode(["ok" => false, "error" => "No se pudo escribir (revisa permisos)"]); exit; }
-  echo json_encode(["ok" => true, "saved" => count($data["slides"]) . " diapositivas"]); exit;
+  if ($ok === false) {
+    http_response_code(500);
+    echo json_encode(["ok" => false, "error" => "No se pudo escribir banner.json (revisa permisos)"]);
+    exit;
+  }
+  echo json_encode(["ok" => true, "saved" => count($data["slides"]) . " diapositivas"]);
+  exit;
 }
-http_response_code(405); echo json_encode(["ok" => false, "error" => "Método no permitido"]);
+
+http_response_code(405);
+echo json_encode(["ok" => false, "error" => "Método no permitido"]);

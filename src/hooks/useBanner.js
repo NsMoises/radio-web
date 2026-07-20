@@ -13,10 +13,10 @@ export function useBanner() {
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const res = await fetch(API_URL, { method: "GET" });
+      const res = await fetch(API_URL + "?_=" + Date.now(), { method: "GET" });
       if (!res.ok) throw new Error("API " + res.status);
       const json = await res.json();
-      if (!json || !Array.isArray(json.slides)) throw new Error("Formato invÃ¡lido");
+      if (!json || !Array.isArray(json.slides)) throw new Error("Formato inválido");
       setData(json);
       try { localStorage.setItem(LS_KEY, JSON.stringify(json)); } catch {}
       return json;
@@ -53,9 +53,7 @@ export function useBanner() {
       window.dispatchEvent(new CustomEvent(EV_KEY));
       return { ok: true };
     } catch (e) {
-      try { localStorage.setItem(LS_KEY, JSON.stringify(newData)); } catch {}
-      setData(newData);
-      return { ok: false, offline: true, error: String(e?.message || e) };
+      return { ok: false, error: String(e?.message || e) };
     }
   }, [load]);
 
