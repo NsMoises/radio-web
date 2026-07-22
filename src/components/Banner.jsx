@@ -23,7 +23,7 @@ export default function Banner({ slides, seasonLabel }) {
           <div
             key={s.id != null ? s.id : i}
             className={"banner__slide" + (i === idx ? " banner__slide--active" : "")}
-            style={{ backgroundImage: `url(${s.image})` }}
+            style={s.image ? { backgroundImage: `url(${s.image})` } : undefined}
           >
             <div className="banner__overlay" />
             <div className="banner__caption">

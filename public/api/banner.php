@@ -19,7 +19,8 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
       "seasonLabel" => "Temporada actual",
       "slides" => [
         ["id" => 1, "image" => "", "title" => "Bienvenido a la radio", "subtitle" => "La mejor música 24/7", "season" => ""],
-        ["id" => 2, "image" => "", "title" => "Música sin pausa", "subtitle" => "Programación en vivo todo el día", "season" => ""]
+        ["id" => 2, "image" => "", "title" => "Música sin pausa", "subtitle" => "Programación en vivo todo el día", "season" => ""],
+        ["id" => 3, "image" => "", "title" => "Tu emisora de confianza", "subtitle" => "Entretenimiento y buena música", "season" => ""]
       ]
     ];
     file_put_contents(DATA_FILE, json_encode($defaults, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
