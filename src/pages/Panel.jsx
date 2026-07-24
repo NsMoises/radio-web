@@ -198,7 +198,7 @@ function EditorTop20() {
 function EditorTop15() {
   const { data, loading, error, save } = useVideos();
   const [videos, setVideos] = useState([]);
-  const [date, setDate] = useState(today);
+  const [header, setHeader] = useState({ lastUpdatedAt: today, weekLabel: "" });
   const [status, setStatus] = useState(null);
   const [saving, setSaving] = useState(false);
   const [fetchingIds, setFetchingIds] = useState(new Set());
@@ -206,50 +206,51 @@ function EditorTop15() {
 
   useEffect(() => {
     if (!data) return;
-    setVideos(data.videos.map((v, i) => ({ ...v, id: i + 1 })));
-    setDate(data.lastUpdatedAt || today);
+    setVideos(data.videos.map((v, i) => ({ ...v, id: i + 1, videoId: extractYouTubeId(v.url) || v.videoId || "" })));
+    setHeader({ lastUpdatedAt: data.lastUpdatedAt || today, weekLabel: data.weekLabel || "" });
   }, [data]);
 
-  // Auto-fetch via useEffect: detects videos with videoId but no title
+  const defaultWeek = useMemo(() => {
+    const d = new Date();
+    return "Semana del " + d.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+  }, []);
+
   useEffect(() => {
     const toFetch = [];
-    for (const v of videos) {
-      if (!v.videoId || v.videoId.length < 11) continue;
-      if (fetchedRef.current.has(v.videoId)) continue;
-      toFetch.push(v);
+    for (const r of videos) {
+      if (!r.videoId || r.videoId.length < 11) continue;
+      if (fetchedRef.current.has(r.videoId)) continue;
+      toFetch.push(r);
     }
     if (toFetch.length === 0) return;
-    toFetch.forEach((v) => {
-      fetchedRef.current.add(v.videoId);
-      setFetchingIds((prev) => new Set([...prev, v.id]));
-      fetchYoutubeInfo(v.videoId).then((info) => {
-        setFetchingIds((prev) => { const next = new Set(prev); next.delete(v.id); return next; });
+    toFetch.forEach((r) => {
+      fetchedRef.current.add(r.videoId);
+      setFetchingIds((prev) => new Set([...prev, r.id]));
+      fetchYoutubeInfo(r.videoId).then((info) => {
+        setFetchingIds((prev) => { const next = new Set(prev); next.delete(r.id); return next; });
         if (!info) return;
-        setVideos((rs) => rs.map((r) => {
-          if (r.id !== v.id) return r;
-          return {
-            ...r,
-            title: info.title || r.title || "",
-            artist: info.artist || r.artist || "",
-          };
+        setVideos((rs) => rs.map((row) => {
+          if (row.id !== r.id) return row;
+          return { ...row, title: info.title || row.title || "", artist: info.artist || row.artist || "" };
         }));
       });
     });
   }, [videos]);
 
-  const update = (id, field, value) => setVideos((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
-
-  const fetchNow = async (v) => {
-    if (!v.videoId || v.videoId.length < 11) return;
-    setFetchingIds((prev) => new Set([...prev, v.id]));
-    const info = await fetchYoutubeInfo(v.videoId);
-    setFetchingIds((prev) => { const next = new Set(prev); next.delete(v.id); return next; });
+  const fetchNow = async (r) => {
+    const vid = extractYouTubeId(r.url) || r.videoId;
+    if (!vid || vid.length < 11) return;
+    setFetchingIds((prev) => new Set([...prev, r.id]));
+    const info = await fetchYoutubeInfo(vid);
+    setFetchingIds((prev) => { const next = new Set(prev); next.delete(r.id); return next; });
     if (!info) { alert("No se pudo obtener info del video. Abrí F12 > Console para ver detalles."); return; }
-    setVideos((rs) => rs.map((r) => {
-      if (r.id !== v.id) return r;
-      return { ...r, title: info.title || r.title, artist: info.artist || r.artist };
+    setVideos((rs) => rs.map((row) => {
+      if (row.id !== r.id) return row;
+      return { ...row, title: info.title || row.title, artist: info.artist || row.artist, videoId: vid };
     }));
   };
+
+  const update = (id, field, value) => setVideos((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
 
   const move = (index, dir) => setVideos((rs) => {
     const next = [...rs];
@@ -263,7 +264,7 @@ function EditorTop15() {
   const addEmpty = () => {
     setVideos((rs) => {
       const maxId = rs.reduce((m, v) => Math.max(m, v.id || 0), 0);
-      return [...rs, { id: maxId + 1, rank: rs.length + 1, title: "", artist: "", videoId: "" }];
+      return [...rs, { id: maxId + 1, rank: rs.length + 1, title: "", artist: "", url: "", videoId: "", enteredAt: today, lastWeekPosition: 0, peakPosition: 0, isNew: false }];
     });
   };
 
@@ -275,7 +276,11 @@ function EditorTop15() {
   const guardar = async () => {
     if (saving) return;
     setSaving(true);
-    const payload = { lastUpdatedAt: date, videos: videos.map((v, i) => ({ ...v, rank: i + 1 })) };
+    const payload = {
+      lastUpdatedAt: header.lastUpdatedAt || today,
+      weekLabel: header.weekLabel || defaultWeek,
+      videos: videos.map((v, i) => ({ ...v, rank: i + 1, lastWeekPosition: parseInt(v.lastWeekPosition, 10) || 0, peakPosition: parseInt(v.peakPosition, 10) || i + 1 }))
+    };
     const res = await save(payload);
     setSaving(false);
     if (res.ok) setStatus({ ok: true, msg: "✓ Guardado. El Top 15 público está actualizado." });
@@ -283,7 +288,7 @@ function EditorTop15() {
     else setStatus({ ok: false, msg: "✕ Error: " + (res.error || "no se pudo guardar") });
   };
 
-  const exportBackup = () => downloadJson({ lastUpdatedAt: date, videos: videos }, "top15videos-backup.json");
+  const exportBackup = () => downloadJson({ lastUpdatedAt: header.lastUpdatedAt, weekLabel: header.weekLabel, videos }, "top15videos-backup.json");
 
   if (loading) return <p style={{ color: "var(--text-dim)" }}>Cargando vídeos…</p>;
 
@@ -292,7 +297,7 @@ function EditorTop15() {
       <header className="panel__head">
         <div>
           <h1>Top 15 — Videos musicales</h1>
-          <p>{videos.length} vídeos</p>
+          <p>{videos.length} vídeos · {header.weekLabel || defaultWeek}</p>
           {error === "offline" && <p className="panel__offline">⚠ Sin backend: cambios solo locales</p>}
         </div>
         <div className="panel__actions">
@@ -305,7 +310,8 @@ function EditorTop15() {
       {status && <div className={"panel__status" + (status.ok ? " panel__status--ok" : " panel__status--warn")}>{status.msg}</div>}
       <div className="panel__list">
         {videos.map((v, i) => {
-          const thumb = youtubeThumb(v.videoId);
+          const vid = extractYouTubeId(v.url);
+          const thumb = vid ? youtubeThumb(vid, "hqdefault") : null;
           return (
             <div className="panel-row" key={v.id || i}>
               <div className="panel-row__pos">
@@ -317,14 +323,20 @@ function EditorTop15() {
                 </div>
               </div>
               <div className="panel-row__thumb">
-                {thumb ? <><img src={thumb} alt="" onError={(e) => { e.target.style.display = "none"; }} /><span className="panel-row__play" aria-hidden="true" /></> : <span className="panel-row__nothumb">sin thumbnail</span>}
+                {thumb ? <img src={thumb} alt="" onError={(e) => { e.target.style.display = "none"; }} /> : <span className="panel-row__nothumb">sin miniatura</span>}
               </div>
               <div className="panel-row__fields">
-                <input type="text" value={v.title || ""} onChange={(e) => update(v.id, "title", e.target.value)} placeholder="Título del vídeo" />
-                <input type="text" value={v.artist || ""} onChange={(e) => update(v.id, "artist", e.target.value)} placeholder="Artista / Banda" />
+                <input type="text" value={v.title || ""} onChange={(e) => update(v.id, "title", e.target.value)} placeholder="Título" />
+                <input type="text" value={v.artist || ""} onChange={(e) => update(v.id, "artist", e.target.value)} placeholder="Artista" />
                 <div className="panel-row__row panel-row__row--wide">
-                  <input type="text" value={v.videoId || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw) || raw; update(v.id, "videoId", extracted); }} placeholder="Pega el link de YouTube o el ID del vídeo" className="panel-row__input--mono" />
+                  <input type="text" value={v.url || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw); update(v.id, "url", raw); if (extracted) update(v.id, "videoId", extracted); }} placeholder="Pega el enlace de YouTube" className="panel-row__input--mono" />
                   {fetchingIds.has(v.id) ? <span className="panel__fetch-spinner" title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(v)} title="Obtener título y artista desde YouTube" style={{ fontSize: "0.9rem", padding: "2px 8px" }}>🔄</button>}
+                </div>
+                <div className="panel-row__row">
+                  <label>Entró: <input type="date" value={(v.enteredAt || today).slice(0, 10)} onChange={(e) => update(v.id, "enteredAt", e.target.value)} /></label>
+                  <label>Sem. ant.: <input type="number" min="0" max="15" value={v.lastWeekPosition ?? 0} onChange={(e) => update(v.id, "lastWeekPosition", e.target.value)} /></label>
+                  <label>Pico: <input type="number" min="1" max="15" value={v.peakPosition ?? (i + 1)} onChange={(e) => update(v.id, "peakPosition", e.target.value)} /></label>
+                  <label className="panel-row__check"><input type="checkbox" checked={!!v.isNew} onChange={(e) => { update(v.id, "isNew", e.target.checked); if (e.target.checked) { update(v.id, "lastWeekPosition", 0); update(v.id, "peakPosition", 0); } }} /> Nueva</label>
                 </div>
               </div>
             </div>

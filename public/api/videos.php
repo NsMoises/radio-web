@@ -27,9 +27,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   }
   foreach ($data["videos"] as $i => &$v) {
     $v["rank"]    = $i + 1;
+    $v["position"] = $i + 1;
+    $v["lastWeekPosition"] = isset($v["lastWeekPosition"]) ? (int)$v["lastWeekPosition"] : 0;
+    $v["peakPosition"]     = isset($v["peakPosition"]) ? (int)$v["peakPosition"] : ($i + 1);
     $v["title"]   = isset($v["title"]) ? trim($v["title"]) : "(sin título)";
     $v["artist"]  = isset($v["artist"]) ? trim($v["artist"]) : "(sin artista)";
     $v["videoId"] = isset($v["videoId"]) ? trim($v["videoId"]) : "";
+    $v["url"]     = isset($v["url"]) ? trim($v["url"]) : "";
+    $v["enteredAt"] = isset($v["enteredAt"]) ? trim($v["enteredAt"]) : date("Y-m-d");
+    $v["isNew"]   = !empty($v["isNew"]);
     $v["cover"]   = isset($v["cover"]) ? trim($v["cover"]) : ("https://img.youtube.com/vi/" . $v["videoId"] . "/hqdefault.jpg");
     if (!isset($v["id"])) { $v["id"] = $i + 1; }
   }

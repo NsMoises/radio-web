@@ -13,13 +13,13 @@ function videoToSong(v, fallbackDate) {
   return {
     id: v.id,
     position: v.rank,
-    lastWeekPosition: 0,
-    peakPosition: v.rank,
+    lastWeekPosition: v.lastWeekPosition || 0,
+    peakPosition: v.peakPosition || v.rank,
     title: v.title,
     artist: v.artist,
     url: `https://www.youtube.com/watch?v=${v.videoId}`,
     enteredAt: v.enteredAt || fallbackDate,
-    isNew: false
+    isNew: !!v.isNew
   };
 }
 
