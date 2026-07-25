@@ -176,6 +176,7 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 
 /* ===== Grid de estrenos de cine ===== */
 .movies-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.movies-grid--home { grid-template-columns: repeat(2, 1fr); }
 .movie-card {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius); overflow: hidden;

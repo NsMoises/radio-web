@@ -76,8 +76,8 @@ export default function Home() {
           <h2 className="block__title">Estrenos de cine</h2>
           <span className="block__link block__link--muted">{premieres.length} títulos · {seasonLabel}</span>
         </div>
-        <div className="movies-grid">
-          {premieres.map((m) => (
+        <div className="movies-grid movies-grid--home">
+          {premieres.slice(0, 4).map((m) => (
             <MovieCard key={m.id} movie={m} />
           ))}
         </div>
