@@ -87,8 +87,7 @@ export default function Footer() {
         <div className="footer__col">
           <h4 className="footer__heading">Contacto</h4>
           <ul className="footer__links">
-            <li><a href="mailto:estudio@radioonline.test">estudio@radioonline.test</a></li>
-            <li><a href="tel:+34900000000">+34 900 000 000</a></li>
+            <li><a href="mailto:radperusol@solperuradio.es">radperusol@solperuradio.es</a></li>
             <li><span>Calle del Aire, 12 · Madrid</span></li>
             <li><span>Lun – Dom · 24 h en directo</span></li>
           </ul>
