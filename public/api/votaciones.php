@@ -68,7 +68,7 @@ function loadVotes($file) {
 }
 
 $top20Songs = loadItems("ranking.json", "songs");
-$top15Songs = loadItems("videos.json", "videos");
+$top15Songs = loadItems("top15videos.json", "videos");
 $candSongs  = loadItems("candidatos.json", "candidatos");
 
 $top20Votes   = loadVotes("votos.json");

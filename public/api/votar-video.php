@@ -38,7 +38,7 @@ function saveVotes($list) {
 
 // Migra votos viejos (videoId = posicion numerica) a la identidad estable (videoId de YouTube).
 function migrateLegacyVotes($list) {
-  $rf = DATA_DIR . "/videos.json";
+  $rf = DATA_DIR . "/top15videos.json";
   if (!file_exists($rf)) return $list;
   $rd = json_decode(file_get_contents($rf), true) ?: [];
   $map = [];
