@@ -13,10 +13,9 @@ export const TREND = {
 };
 
 export function computeTrend(song, now = new Date()) {
-  if (song.isNew || daysOnList(song.enteredAt, now) < 7) {
-    return TREND.NEW;
-  }
-  if (song.lastWeekPosition == null || song.lastWeekPosition === 0) {
+  if (song.isNew) return TREND.NEW;
+  const hasHistory = song.lastWeekPosition != null && song.lastWeekPosition > 0;
+  if (!hasHistory) {
     return daysOnList(song.enteredAt, now) >= 7
       ? TREND.RE_ENTRY
       : TREND.NEW;
