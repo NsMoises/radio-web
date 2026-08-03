@@ -240,7 +240,11 @@ function EditorTop15() {
         if (!info) return;
         setVideos((rs) => rs.map((row) => {
           if (row.id !== r.id) return row;
-          return { ...row, title: info.title || row.title || "", artist: info.artist || row.artist || "" };
+          return {
+            ...row,
+            title: info.title ? info.title.toUpperCase() : row.title || "",
+            artist: info.artist ? info.artist.toUpperCase() : row.artist || ""
+          };
         }));
       });
     });
@@ -255,7 +259,12 @@ function EditorTop15() {
     if (!info) { alert("No se pudo obtener info del video. Abrí F12 > Console para ver detalles."); return; }
     setVideos((rs) => rs.map((row) => {
       if (row.id !== r.id) return row;
-      return { ...row, title: info.title || row.title, artist: info.artist || row.artist, videoId: vid };
+      return {
+        ...row,
+        title: info.title ? info.title.toUpperCase() : row.title,
+        artist: info.artist ? info.artist.toUpperCase() : row.artist,
+        videoId: vid
+      };
     }));
   };
 
