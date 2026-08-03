@@ -10,7 +10,9 @@ import FloatingMiniPlayer from "./components/FloatingMiniPlayer.jsx";
 
 const Home = lazy(() => import("./pages/Home.jsx"));
 const RankingTop20 = lazy(() => import("./pages/RankingTop20.jsx"));
+const Candidatos = lazy(() => import("./pages/Candidatos.jsx"));
 const Top15Videos = lazy(() => import("./pages/Top15Videos.jsx"));
+const Cine = lazy(() => import("./pages/Cine.jsx"));
 const News = lazy(() => import("./pages/News.jsx"));
 const Programs = lazy(() => import("./pages/Programs.jsx"));
 const Panel = lazy(() => import("./pages/Panel.jsx"));
@@ -48,7 +50,9 @@ export default function App() {
               <Routes>
                 <Route path="/"             element={<Home />} />
                 <Route path="/top-20"       element={<RankingTop20 />} />
+                <Route path="/candidatos"   element={<Candidatos />} />
                 <Route path="/top-15"       element={<Top15Videos />} />
+                <Route path="/cine"         element={<Cine />} />
                 <Route path="/noticias"     element={<News />} />
                 <Route path="/programacion" element={<Programs />} />
                 <Route path="/panel"        element={<Panel />} />

@@ -13,9 +13,11 @@ const SOCIALS = [
 
 const SECTIONS = [
   { to: "/top-20",       label: "Ranking Top 20" },
-  { to: "/top-15",       label: "Top 15 Vídeos"  },
-  { to: "/noticias",     label: "Noticias"       },
-  { to: "/programacion", label: "Programación"   }
+  { to: "/candidatos",   label: "Candidatos"      },
+  { to: "/top-15",       label: "Top 15 Vídeos"   },
+  { to: "/cine",         label: "Estrenos de cine"},
+  { to: "/noticias",     label: "Noticias"        },
+  { to: "/programacion", label: "Programación"    }
 ];
 
 export default function Footer() {

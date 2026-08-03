@@ -10,12 +10,13 @@ import { useCandidatos } from "../hooks/useCandidatos.js";
 import { useVideos } from "../hooks/useVideos.js";
 import { useVotoCandidato } from "../hooks/useVotoCandidato.js";
 import { useVotoVideo } from "../hooks/useVotoVideo.js";
-import { youtubeThumb, extractYouTubeId, youtubeEmbed } from "../utils/youtube-utils.js";
+import { extractYouTubeId, youtubeEmbed } from "../utils/youtube-utils.js";
 import Banner from "../components/Banner.jsx";
 import LiveCam from "../components/LiveCam.jsx";
 import MovieCard from "../components/MovieCard.jsx";
 import TopPreviewCard from "../components/TopPreviewCard.jsx";
 import SongCard from "../components/SongCard.jsx";
+import CandidateCard from "../components/CandidateCard.jsx";
 import PedidoMusical from "../components/PedidoMusical.jsx";
 import { decorateSongs } from "../utils/ranking-utils.js";
 
@@ -73,7 +74,7 @@ export default function Home() {
       <section className="block">
         <div className="block__head">
           <h2 className="block__title">Candidatos para la próxima semana</h2>
-          <span className="block__link block__link--muted">{candidatosData?.candidatos?.length || 0} candidatos</span>
+          <Link to="/candidatos" className="block__link">Ver todos →</Link>
         </div>
         {cv.voteMsg && <div className="vote-toast">{cv.voteMsg}</div>}
         <div className="candidatos-grid">
@@ -108,7 +109,7 @@ export default function Home() {
       <section className="block">
         <div className="block__head">
           <h2 className="block__title">Estrenos de cine</h2>
-          <span className="block__link block__link--muted">{premieres.length} títulos · {seasonLabel}</span>
+          <Link to="/cine" className="block__link">Ver todos →</Link>
         </div>
         <div className="movies-grid movies-grid--home">
           {premieres.slice(0, 4).map((m) => (
@@ -259,44 +260,6 @@ function videoToSong(v, fallbackDate) {
     enteredAt: v.enteredAt || fallbackDate,
     isNew: !!v.isNew
   };
-}
-
-function CandidateCard({ c, cv, onPlay }) {
-  const [qi, setQi] = useState(0);
-  const [imgSrc, setImgSrc] = useState(youtubeThumb(c.videoId, THUMB_QUALITIES[0]));
-  const voteId = c.videoId || extractYouTubeId(c.url) || c.id;
-  const count = cv.votes?.[voteId] ?? 0;
-  const isMy = cv.myVote === voteId;
-  return (
-    <div className="candidato-card" onClick={onPlay} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onPlay(); }}>
-      <div className="candidato-card__thumb">
-        <img src={imgSrc} alt={c.title} loading="lazy" onError={() => {
-          const next = qi + 1;
-          if (next < THUMB_QUALITIES.length) {
-            setQi(next);
-            setImgSrc(youtubeThumb(c.videoId, THUMB_QUALITIES[next]));
-          } else if (c.cover) {
-            setImgSrc(c.cover);
-          }
-        }} />
-        <span className="candidato-card__play">▶</span>
-        <span className="candidato-card__pos">#{c.position}</span>
-        <button
-          className={"candidato-card__vote" + (isMy ? " candidato-card__vote--done" : "")}
-          onClick={(e) => { e.stopPropagation(); cv.vote(c.videoId || extractYouTubeId(c.url) || c.id); }}
-          title={isMy ? "Retirar voto" : "Votar"}
-          aria-label="Votar"
-        >
-          {isMy ? "❤" : "♡"}
-          {count > 0 && <span className="candidato-card__vote-count">{count}</span>}
-        </button>
-      </div>
-      <div className="candidato-card__body">
-        <div className="candidato-card__title">{c.title}</div>
-        <div className="candidato-card__artist">{c.artist}</div>
-      </div>
-    </div>
-  );
 }
 
 function DjCard3D({ dj }) {
