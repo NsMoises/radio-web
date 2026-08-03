@@ -1429,10 +1429,10 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 
 /* ===== Resumen Top 20 â€” 4 mini-cards ===== */
 .topp20-mini-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px;
   align-items: stretch;
 }
-.topp20-mini-link { display: block; height: 100%; }
+.topp20-mini-link { display: block; height: 100%; min-width: 0; }
 .topp20-mini {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius); overflow: hidden;
@@ -1502,7 +1502,7 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 }
 
 @media (max-width: 720px) {
-  .topp20-mini-grid { grid-template-columns: repeat(2, 1fr); }
+  .topp20-mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 420px) {
   .topp20-mini-grid { grid-template-columns: 1fr; }
@@ -1510,12 +1510,13 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 
 /* ===== Candidatos para proxima semana ===== */
 .candidatos-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px;
 }
 .candidato-card {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius); overflow: hidden; cursor: pointer;
   transition: transform .15s, border-color .15s, box-shadow .15s;
+  min-width: 0;
 }
 .candidato-card:hover {
   transform: translateY(-3px);
@@ -1561,10 +1562,10 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 .candidato-card__artist { color: var(--text-dim); font-size: 0.82rem; margin-top: 2px; }
 
 @media (max-width: 900px) {
-  .candidatos-grid { grid-template-columns: repeat(3, 1fr); }
+  .candidatos-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 560px) {
-  .candidatos-grid { grid-template-columns: repeat(2, 1fr); }
+  .candidatos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* ===== Footer moderno ===== */
