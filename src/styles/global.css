@@ -1444,8 +1444,11 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
   border-color: var(--accent);
   box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 0 1px var(--accent) inset;
 }
-.topp20-mini__cover { position: relative; aspect-ratio: 16 / 9; flex-shrink: 0; }
-.topp20-mini__cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.topp20-mini__cover { position: relative; aspect-ratio: 16 / 9; flex-shrink: 0; overflow: hidden; }
+.topp20-mini__cover img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
 .topp20-mini__cover::before {
   content: ""; position: absolute; inset: 0; z-index: -1;
   background: linear-gradient(135deg, #1a1a2e, #16213e);
