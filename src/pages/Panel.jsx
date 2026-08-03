@@ -56,7 +56,7 @@ function EditorTop20() {
 
   useEffect(() => {
     if (!data) return;
-    setRows(data.songs.map((s, i) => ({ ...s, id: i + 1, videoId: extractYouTubeId(s.url) || s.videoId || "" })));
+    setRows(data.songs.map((s, i) => ({ ...s, id: extractYouTubeId(s.url) || s.videoId || s.id || i + 1, videoId: extractYouTubeId(s.url) || s.videoId || "" })));
     setHeader({ lastUpdatedAt: data.lastUpdatedAt || today, weekLabel: data.weekLabel || "" });
   }, [data]);
 
@@ -182,7 +182,7 @@ function EditorTop20() {
                 <input type="text" value={r.title || ""} onChange={(e) => update(r.id, "title", e.target.value)} placeholder="Título" />
                 <input type="text" value={r.artist || ""} onChange={(e) => update(r.id, "artist", e.target.value)} placeholder="Artista" />
                 <div className="panel-row__row panel-row__row--wide">
-                  <input type="text" value={r.url || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw); update(r.id, "url", raw); if (extracted) update(r.id, "videoId", extracted); }} placeholder="Pega el enlace de YouTube" className="panel-row__input--mono" />
+                  <input type="text" value={r.url || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw); update(r.id, "url", raw); if (extracted) { update(r.id, "videoId", extracted); update(r.id, "id", extracted); } }} placeholder="Pega el enlace de YouTube" className="panel-row__input--mono" />
                   {fetchingIds.has(r.id) ? <span className="panel__fetch-spinner" title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(r)} title="Obtener título y artista desde YouTube" style={{ fontSize: "0.9rem", padding: "2px 8px" }}>🔄</button>}
                 </div>
                 <div className="panel-row__row">
@@ -215,7 +215,7 @@ function EditorTop15() {
 
   useEffect(() => {
     if (!data) return;
-    setVideos(data.videos.map((v, i) => ({ ...v, id: i + 1, videoId: extractYouTubeId(v.url) || v.videoId || "" })));
+    setVideos(data.videos.map((v, i) => ({ ...v, id: extractYouTubeId(v.url) || v.videoId || v.id || i + 1, videoId: extractYouTubeId(v.url) || v.videoId || "" })));
     setHeader({ lastUpdatedAt: data.lastUpdatedAt || today, weekLabel: data.weekLabel || "" });
   }, [data]);
 
@@ -347,7 +347,7 @@ function EditorTop15() {
                 <input type="text" value={v.title || ""} onChange={(e) => update(v.id, "title", e.target.value)} placeholder="Título" />
                 <input type="text" value={v.artist || ""} onChange={(e) => update(v.id, "artist", e.target.value)} placeholder="Artista" />
                 <div className="panel-row__row panel-row__row--wide">
-                  <input type="text" value={v.url || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw); update(v.id, "url", raw); if (extracted) update(v.id, "videoId", extracted); }} placeholder="Pega el enlace de YouTube" className="panel-row__input--mono" />
+                  <input type="text" value={v.url || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw); update(v.id, "url", raw); if (extracted) { update(v.id, "videoId", extracted); update(v.id, "id", extracted); } }} placeholder="Pega el enlace de YouTube" className="panel-row__input--mono" />
                   {fetchingIds.has(v.id) ? <span className="panel__fetch-spinner" title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(v)} title="Obtener título y artista desde YouTube" style={{ fontSize: "0.9rem", padding: "2px 8px" }}>🔄</button>}
                 </div>
                 <div className="panel-row__row">
@@ -935,7 +935,7 @@ function EditorCandidatos() {
 
   useEffect(() => {
     if (!data) return;
-    setRows(data.candidatos.map((c, i) => ({ ...c, id: i + 1, videoId: c.videoId || extractYouTubeId(c.url) || "" })));
+    setRows(data.candidatos.map((c, i) => ({ ...c, id: c.videoId || extractYouTubeId(c.url) || c.id || i + 1, videoId: c.videoId || extractYouTubeId(c.url) || "" })));
     setWeekLabel(data.weekLabel || "");
   }, [data]);
 
@@ -999,7 +999,7 @@ function EditorCandidatos() {
   const handleSave = async () => {
     if (saving) return;
     setSaving(true); setStatus(null);
-    const payload = { weekLabel, candidatos: rows.map((r, i) => ({ ...r, position: i + 1, id: i + 1 })) };
+    const payload = { weekLabel, candidatos: rows.map((r, i) => ({ ...r, position: i + 1 })) };
     const res = await save(payload);
     setSaving(false);
     if (res.ok) setStatus({ ok: true, msg: "✓ Guardado. Los candidatos están actualizados." });
@@ -1049,7 +1049,7 @@ function EditorCandidatos() {
                   <input type="text" value={r.artist || ""} onChange={(e) => update(r.id, "artist", e.target.value)} placeholder="Artista" />
                 </div>
                 <div className="panel-row__row">
-                  <input type="text" value={r.videoId || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw) || raw; update(r.id, "videoId", extracted); }} placeholder="Link o ID de YouTube" style={{ flex: 1 }} />
+                  <input type="text" value={r.videoId || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw) || raw; update(r.id, "videoId", extracted); if (extracted) update(r.id, "id", extracted); }} placeholder="Link o ID de YouTube" style={{ flex: 1 }} />
                   {fetchingIds.has(r.id) ? <span title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(r)} title="Obtener título y artista desde YouTube">🔄</button>}
                 </div>
               </div>

@@ -11,7 +11,7 @@ const COLS = 3;
 
 function videoToSong(v, fallbackDate) {
   return {
-    id: v.id,
+    id: v.videoId,
     position: v.rank,
     lastWeekPosition: v.lastWeekPosition || 0,
     peakPosition: v.peakPosition || v.rank,

@@ -18,32 +18,34 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
 
 requireAuth();
 
-function loadSongs($file) {
+function loadItems($file, $listKey) {
   $path = DATA_DIR . "/$file";
   if (!file_exists($path)) return [];
   $data = json_decode(file_get_contents($path), true) ?: [];
-  $songs = [];
-  foreach ($data["songs"] ?? [] as $s) {
-    $songs[(int)$s["id"]] = [
+  $items = [];
+  foreach ($data[$listKey] ?? [] as $s) {
+    $key = $s["videoId"] ?? $s["id"] ?? "";
+    if ($key === "") continue;
+    $items[(string)$key] = [
       "title" => $s["title"] ?? "",
       "artist" => $s["artist"] ?? "",
       "position" => $s["position"] ?? 0
     ];
   }
-  return $songs;
+  return $items;
 }
 
-function groupVotes($votes, $songs, $idKey) {
+function groupVotes($votes, $items, $idKey) {
   $byItem = [];
   foreach ($votes as $v) {
-    $id = (int)($v[$idKey] ?? 0);
-    if ($id <= 0) continue;
+    $id = (string)($v[$idKey] ?? "");
+    if ($id === "") continue;
     if (!isset($byItem[$id])) {
       $byItem[$id] = [
         "id" => $id,
-        "title" => $songs[$id]["title"] ?? "(#$id)",
-        "artist" => $songs[$id]["artist"] ?? "",
-        "position" => $songs[$id]["position"] ?? 0,
+        "title" => $items[$id]["title"] ?? "(#$id)",
+        "artist" => $items[$id]["artist"] ?? "",
+        "position" => $items[$id]["position"] ?? 0,
         "total" => 0,
         "voters" => []
       ];
@@ -65,8 +67,9 @@ function loadVotes($file) {
   return json_decode(file_get_contents($path), true) ?: [];
 }
 
-$top20Songs = loadSongs("ranking.json");
-$top15Songs = loadSongs("videos.json");
+$top20Songs = loadItems("ranking.json", "songs");
+$top15Songs = loadItems("videos.json", "videos");
+$candSongs  = loadItems("candidatos.json", "candidatos");
 
 $top20Votes   = loadVotes("votos.json");
 $top15Votes   = loadVotes("votos-videos.json");
@@ -74,7 +77,7 @@ $candVotes    = loadVotes("votos-candidatos.json");
 
 $top20Results = groupVotes($top20Votes, $top20Songs, "songId");
 $top15Results = groupVotes($top15Votes, $top15Songs, "videoId");
-$candResults  = groupVotes($candVotes, [], "candidatoId");
+$candResults  = groupVotes($candVotes, $candSongs, "candidatoId");
 
 echo json_encode([
   "ok" => true,

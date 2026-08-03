@@ -1,4 +1,16 @@
 <?php
+/**
+ * API de votacion para el Top 15 de videos.
+ * Anti-spam: 1 voto por IP por dia (un video).
+ * Soporta voto y retirar voto.
+ *
+ *   GET  /api/votar-video.php   -> { ok, votes: { videoId: count, ... }, myVote: <videoId|null> }
+ *   POST /api/votar-video.php   -> { ok, votes: {...}, myVote: <videoId|null> }
+ *        Body: { "videoId": <string> }  o  { "videoId": <string>, "action": "unvote" }
+ *
+ * El videoId es el ID de YouTube: identidad estable del video,
+ * no su posicion en el ranking.
+ */
 const DATA_DIR  = __DIR__ . "/data";
 const DATA_FILE = DATA_DIR . "/votos-videos.json";
 
@@ -12,19 +24,51 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") { http_response_code(204); exit; }
 if (!is_dir(DATA_DIR)) { @mkdir(DATA_DIR, 0775, true); }
 if (!file_exists(DATA_FILE)) { @file_put_contents(DATA_FILE, "[]"); }
 
-function loadVotes() {
-  return json_decode(file_get_contents(DATA_FILE), true) ?: [];
+function extractVideoId($url) {
+  if (!is_string($url)) return "";
+  if (preg_match('/[?&]v=([A-Za-z0-9_-]{11})/', $url, $m)) return $m[1];
+  if (preg_match('#youtu\.be/([A-Za-z0-9_-]{11})#', $url, $m)) return $m[1];
+  if (preg_match('/^[A-Za-z0-9_-]{11}$/', $url)) return $url;
+  return "";
 }
 
 function saveVotes($list) {
   return file_put_contents(DATA_FILE, json_encode($list, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 }
 
+// Migra votos viejos (videoId = posicion numerica) a la identidad estable (videoId de YouTube).
+function migrateLegacyVotes($list) {
+  $rf = DATA_DIR . "/videos.json";
+  if (!file_exists($rf)) return $list;
+  $rd = json_decode(file_get_contents($rf), true) ?: [];
+  $map = [];
+  foreach (($rd["videos"] ?? []) as $i => $s) {
+    $vid = is_string($s["videoId"] ?? "") ? $s["videoId"] : "";
+    if ($vid === "") $vid = extractVideoId($s["url"] ?? "");
+    if ($vid !== "") $map[$i + 1] = $vid;
+  }
+  if (!$map) return $list;
+  $changed = false;
+  foreach ($list as $k => $v) {
+    $id = (string)($v["videoId"] ?? "");
+    if (preg_match('/^\d+$/', $id) && isset($map[(int)$id])) {
+      $list[$k]["videoId"] = $map[(int)$id];
+      $changed = true;
+    }
+  }
+  if ($changed) saveVotes($list);
+  return $list;
+}
+
+function loadVotes() {
+  return migrateLegacyVotes(json_decode(file_get_contents(DATA_FILE), true) ?: []);
+}
+
 function getVoteCounts($list) {
   $counts = [];
   foreach ($list as $v) {
-    $id = (int)($v["videoId"] ?? 0);
-    if ($id > 0) $counts[$id] = ($counts[$id] ?? 0) + 1;
+    $id = (string)($v["videoId"] ?? "");
+    if ($id !== "") $counts[$id] = ($counts[$id] ?? 0) + 1;
   }
   return $counts;
 }
@@ -32,7 +76,7 @@ function getVoteCounts($list) {
 function myVote($list, $ip, $today) {
   foreach ($list as $v) {
     if (($v["ip"] ?? "") === $ip && ($v["date"] ?? "") === $today) {
-      return (int)($v["videoId"] ?? 0);
+      return (string)($v["videoId"] ?? "");
     }
   }
   return null;
@@ -57,10 +101,10 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
   $raw = file_get_contents("php://input");
   $body = json_decode($raw, true);
-  $videoId = (int)($body["videoId"] ?? 0);
+  $videoId = trim((string)($body["videoId"] ?? ""));
   $action = $body["action"] ?? "vote";
 
-  if ($videoId <= 0) {
+  if ($videoId === "") {
     http_response_code(400);
     echo json_encode(["ok" => false, "error" => "videoId invalido"]);
     exit;
@@ -73,7 +117,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   if ($action === "unvote") {
     $found = false;
     foreach ($list as $k => $v) {
-      if ((int)($v["videoId"] ?? 0) === $videoId && ($v["ip"] ?? "") === $ip && ($v["date"] ?? "") === $today) {
+      if ((string)($v["videoId"] ?? "") === $videoId && ($v["ip"] ?? "") === $ip && ($v["date"] ?? "") === $today) {
         array_splice($list, $k, 1);
         $found = true;
         break;
@@ -88,7 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   if ($existing !== null) {
     if ($existing === $videoId) {
       foreach ($list as $k => $v) {
-        if ((int)($v["videoId"] ?? 0) === $videoId && ($v["ip"] ?? "") === $ip && ($v["date"] ?? "") === $today) {
+        if ((string)($v["videoId"] ?? "") === $videoId && ($v["ip"] ?? "") === $ip && ($v["date"] ?? "") === $today) {
           array_splice($list, $k, 1);
           break;
         }

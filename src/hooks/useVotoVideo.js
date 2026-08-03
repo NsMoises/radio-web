@@ -6,7 +6,7 @@ const LS_COUNTS = "radio-web:votos-video:counts";
 const LS_NOMBRE = "radio-web:votos-video:nombre";
 
 function getLocalMyVote() {
-  try { return parseInt(localStorage.getItem(LS_MY_VOTE), 10) || null; } catch { return null; }
+  try { return localStorage.getItem(LS_MY_VOTE) || null; } catch { return null; }
 }
 function setLocalMyVote(videoId) {
   try { if (videoId) localStorage.setItem(LS_MY_VOTE, String(videoId)); else localStorage.removeItem(LS_MY_VOTE); } catch {}
