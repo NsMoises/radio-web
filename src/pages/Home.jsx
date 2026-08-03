@@ -7,12 +7,15 @@ import { useBanner } from "../hooks/useBanner.js";
 import { useDjs } from "../hooks/useDjs.js";
 import { useRanking } from "../hooks/useRanking.js";
 import { useCandidatos } from "../hooks/useCandidatos.js";
+import { useVideos } from "../hooks/useVideos.js";
 import { useVotoCandidato } from "../hooks/useVotoCandidato.js";
+import { useVotoVideo } from "../hooks/useVotoVideo.js";
 import { youtubeThumb, extractYouTubeId, youtubeEmbed } from "../utils/youtube-utils.js";
 import Banner from "../components/Banner.jsx";
 import LiveCam from "../components/LiveCam.jsx";
 import MovieCard from "../components/MovieCard.jsx";
 import TopPreviewCard from "../components/TopPreviewCard.jsx";
+import SongCard from "../components/SongCard.jsx";
 import PedidoMusical from "../components/PedidoMusical.jsx";
 import { decorateSongs } from "../utils/ranking-utils.js";
 
@@ -24,7 +27,9 @@ export default function Home() {
   const { data: djsData } = useDjs();
   const { data } = useRanking();
   const { data: candidatosData } = useCandidatos();
+  const { data: videosData } = useVideos();
   const cv = useVotoCandidato();
+  const vv = useVotoVideo();
 
   const latestNews = newsData?.articles?.slice(0, 3) || [];
   const premieres = premieresData?.premieres || [];
@@ -36,54 +41,20 @@ export default function Home() {
 
   const top20 = useMemo(() => decorateSongs(data?.songs || []), [data]);
   const top4 = top20.slice(0, 4);
+  const videos = videosData?.videos || [];
+  const top15Preview = useMemo(() => {
+    const fallbackDate = videosData?.lastUpdatedAt || new Date().toISOString().slice(0, 10);
+    return decorateSongs(videos.map((v) => videoToSong(v, fallbackDate))).slice(0, 3);
+  }, [videos, videosData]);
   const [showPedido, setShowPedido] = useState(false);
   const [playCandidate, setPlayCandidate] = useState(null);
+  const [playVideo, setPlayVideo] = useState(null);
 
   return (
     <div className="home">
       <Banner slides={slides} seasonLabel={seasonLabel} />
 
-      {/* NOTICIAS */}
-      <section className="block">
-        <div className="block__head">
-          <h2 className="block__title">Noticias del momento</h2>
-          <Link to="/noticias" className="block__link">Ver todas →</Link>
-        </div>
-        <div className="news-grid">
-          {latestNews.map((n) => (
-            <article className="news-card" key={n.id}>
-              <img src={n.cover} alt={n.title} loading="lazy" />
-              <div className="news-card__body">
-                <div className="news-card__tags">
-                  <time className="news-card__date">
-                    {new Date(n.date).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
-                  </time>
-                  {n.category && (
-                    <span className={"news-badge news-badge--" + n.category.toLowerCase()}>{n.category}</span>
-                  )}
-                </div>
-                <h3 className="news-card__title"><Link to="/noticias">{n.title}</Link></h3>
-                <p className="news-card__excerpt">{n.excerpt}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* ESTRENOS DE CINE */}
-      <section className="block">
-        <div className="block__head">
-          <h2 className="block__title">Estrenos de cine</h2>
-          <span className="block__link block__link--muted">{premieres.length} títulos · {seasonLabel}</span>
-        </div>
-        <div className="movies-grid movies-grid--home">
-          {premieres.slice(0, 4).map((m) => (
-            <MovieCard key={m.id} movie={m} />
-          ))}
-        </div>
-      </section>
-
-      {/* RESUMEN TOP 20 — solo 4 tarjetas */}
+      {/* LOS 20 TEMAZOS — solo 4 tarjetas */}
       <section className="block">
         <div className="block__head">
           <h2 className="block__title">Los 20 temazos</h2>
@@ -112,8 +83,66 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CÁMARA EN VIVO */}
-      <LiveCam />
+      {/* LOS 15 VIDEOS — vista previa */}
+      <section className="block">
+        <div className="block__head">
+          <h2 className="block__title">Los 15 vídeos de la semana</h2>
+          <Link to="/top-15" className="block__link">Ver ranking completo →</Link>
+        </div>
+        {vv.voteMsg && <div className="vote-toast">{vv.voteMsg}</div>}
+        <div className="songgrid" style={{ "--grid-cols": 3 }}>
+          {top15Preview.map((s) => (
+            <SongCard
+              key={s.id}
+              song={s}
+              onPick={() => setPlayVideo(s)}
+              votes={vv.votes}
+              myVote={vv.myVote}
+              onVote={vv.vote}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* ESTRENOS DE CINE */}
+      <section className="block">
+        <div className="block__head">
+          <h2 className="block__title">Estrenos de cine</h2>
+          <span className="block__link block__link--muted">{premieres.length} títulos · {seasonLabel}</span>
+        </div>
+        <div className="movies-grid movies-grid--home">
+          {premieres.slice(0, 4).map((m) => (
+            <MovieCard key={m.id} movie={m} />
+          ))}
+        </div>
+      </section>
+
+      {/* NOTICIAS */}
+      <section className="block">
+        <div className="block__head">
+          <h2 className="block__title">Noticias del momento</h2>
+          <Link to="/noticias" className="block__link">Ver todas →</Link>
+        </div>
+        <div className="news-grid">
+          {latestNews.map((n) => (
+            <article className="news-card" key={n.id}>
+              <img src={n.cover} alt={n.title} loading="lazy" />
+              <div className="news-card__body">
+                <div className="news-card__tags">
+                  <time className="news-card__date">
+                    {new Date(n.date).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                  </time>
+                  {n.category && (
+                    <span className={"news-badge news-badge--" + n.category.toLowerCase()}>{n.category}</span>
+                  )}
+                </div>
+                <h3 className="news-card__title"><Link to="/noticias">{n.title}</Link></h3>
+                <p className="news-card__excerpt">{n.excerpt}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
       {/* ESPECIALES DEL MES */}
       <section className="block">
@@ -134,6 +163,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* CÁMARA EN VIVO */}
+      <LiveCam />
 
       {/* DJS / LOCUTORES */}
       <section className="block">
@@ -181,6 +213,32 @@ export default function Home() {
         </div>
       )}
 
+      {/* Modal de video del Top 15 */}
+      {playVideo && (
+        <div className="video-modal" onClick={() => setPlayVideo(null)} role="dialog" aria-modal="true">
+          <div className="video-modal__inner" onClick={(e) => e.stopPropagation()}>
+            <button className="video-modal__close" onClick={() => setPlayVideo(null)} aria-label="Cerrar">✕</button>
+            <div className="video-modal__frame">
+              <iframe key={playVideo.id} src={youtubeEmbed(extractYouTubeId(playVideo.url))} title={playVideo.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+            </div>
+            <div className="video-modal__meta">
+              <span className="video-modal__rank">#{playVideo.position}</span>
+              <div>
+                <div className="video-modal__title">{playVideo.title}</div>
+                <div className="video-modal__artist">{playVideo.artist}</div>
+                <div className="video-modal__extra">
+                  <span className={"trend " + playVideo.trend.className}>
+                    {playVideo.trend.symbol} {playVideo.trend.label}
+                  </span>
+                  <span> · Pico #{playVideo.peak}</span>
+                  <span className="modal-weeks"> · {playVideo.weeksLabel} en lista</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal de pedido musical */}
       <PedidoMusical open={showPedido} onClose={() => setShowPedido(false)} />
     </div>
@@ -188,6 +246,20 @@ export default function Home() {
 }
 
 const THUMB_QUALITIES = ["maxresdefault", "hqdefault", "mqdefault", "default"];
+
+function videoToSong(v, fallbackDate) {
+  return {
+    id: v.id,
+    position: v.rank,
+    lastWeekPosition: v.lastWeekPosition || 0,
+    peakPosition: v.peakPosition || v.rank,
+    title: v.title,
+    artist: v.artist,
+    url: `https://www.youtube.com/watch?v=${v.videoId}`,
+    enteredAt: v.enteredAt || fallbackDate,
+    isNew: !!v.isNew
+  };
+}
 
 function CandidateCard({ c, cv, onPlay }) {
   const [qi, setQi] = useState(0);
