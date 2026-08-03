@@ -1,5 +1,6 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { Suspense, lazy } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { VideoPlayerProvider } from "./context/VideoPlayerContext.jsx";
 import { StreamProvider } from "./context/StreamContext.jsx";
 import Navbar from "./components/Navbar.jsx";
@@ -37,6 +38,38 @@ function NotFound() {
   );
 }
 
+function PageShell({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.28, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/"             element={<PageShell><Home /></PageShell>} />
+        <Route path="/top-20"       element={<PageShell><RankingTop20 /></PageShell>} />
+        <Route path="/candidatos"   element={<PageShell><Candidatos /></PageShell>} />
+        <Route path="/top-15"       element={<PageShell><Top15Videos /></PageShell>} />
+        <Route path="/cine"         element={<PageShell><Cine /></PageShell>} />
+        <Route path="/noticias"     element={<PageShell><News /></PageShell>} />
+        <Route path="/programacion" element={<PageShell><Programs /></PageShell>} />
+        <Route path="/panel"        element={<PageShell><Panel /></PageShell>} />
+        <Route path="*"             element={<PageShell><NotFound /></PageShell>} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -47,17 +80,7 @@ export default function App() {
           <Navbar />
           <main className="app__main">
             <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/"             element={<Home />} />
-                <Route path="/top-20"       element={<RankingTop20 />} />
-                <Route path="/candidatos"   element={<Candidatos />} />
-                <Route path="/top-15"       element={<Top15Videos />} />
-                <Route path="/cine"         element={<Cine />} />
-                <Route path="/noticias"     element={<News />} />
-                <Route path="/programacion" element={<Programs />} />
-                <Route path="/panel"        element={<Panel />} />
-                <Route path="*"             element={<NotFound />} />
-              </Routes>
+              <AnimatedRoutes />
             </Suspense>
           </main>
           <Footer />

@@ -17,6 +17,7 @@ import MovieCard from "../components/MovieCard.jsx";
 import TopPreviewCard from "../components/TopPreviewCard.jsx";
 import SongCard from "../components/SongCard.jsx";
 import CandidateCard from "../components/CandidateCard.jsx";
+import Reveal from "../components/Reveal.jsx";
 import PedidoMusical from "../components/PedidoMusical.jsx";
 import { decorateSongs } from "../utils/ranking-utils.js";
 
@@ -56,6 +57,7 @@ export default function Home() {
       <Banner slides={slides} seasonLabel={seasonLabel} />
 
       {/* LOS 20 TEMAZOS — solo 4 tarjetas */}
+      <Reveal>
       <section className="block">
         <div className="block__head">
           <h2 className="block__title">Los 20 temazos</h2>
@@ -69,8 +71,10 @@ export default function Home() {
           ))}
         </div>
       </section>
+      </Reveal>
 
       {/* CANDIDATOS PROXIMA SEMANA */}
+      <Reveal>
       <section className="block">
         <div className="block__head">
           <h2 className="block__title">Candidatos para la próxima semana</h2>
@@ -83,8 +87,10 @@ export default function Home() {
           ))}
         </div>
       </section>
+      </Reveal>
 
       {/* LOS 15 VIDEOS — vista previa */}
+      <Reveal>
       <section className="block">
         <div className="block__head">
           <h2 className="block__title">Los 15 vídeos de la semana</h2>
@@ -104,8 +110,10 @@ export default function Home() {
           ))}
         </div>
       </section>
+      </Reveal>
 
       {/* ESTRENOS DE CINE */}
+      <Reveal>
       <section className="block">
         <div className="block__head">
           <h2 className="block__title">Estrenos de cine</h2>
@@ -117,8 +125,10 @@ export default function Home() {
           ))}
         </div>
       </section>
+      </Reveal>
 
       {/* NOTICIAS */}
+      <Reveal>
       <section className="block">
         <div className="block__head">
           <h2 className="block__title">Noticias del momento</h2>
@@ -144,8 +154,10 @@ export default function Home() {
           ))}
         </div>
       </section>
+      </Reveal>
 
       {/* ESPECIALES DEL MES */}
+      <Reveal>
       <section className="block">
         <div className="block__head">
           <h2 className="block__title">{monthLabel}</h2>
@@ -164,11 +176,13 @@ export default function Home() {
           ))}
         </div>
       </section>
+      </Reveal>
 
       {/* CÁMARA EN VIVO */}
       <LiveCam />
 
       {/* DJS / LOCUTORES */}
+      <Reveal>
       <section className="block">
         <div className="block__head">
           <h2 className="block__title">Nuestros locutores</h2>
@@ -178,8 +192,10 @@ export default function Home() {
           {djs.length > 0 && <DjCard3D dj={djs[0]} />}
         </div>
       </section>
+      </Reveal>
 
       {/* PEDIDO MUSICAL — CTA grande */}
+      <Reveal>
       <section className="pedido-cta" onClick={() => setShowPedido(true)}>
         <div className="pedido-cta__icon">🎵</div>
         <div className="pedido-cta__text">
@@ -188,12 +204,15 @@ export default function Home() {
         </div>
         <div className="pedido-cta__btn">📞 Contáctanos 🎙️</div>
       </section>
+      </Reveal>
 
       {/* CTA TOP 20 destacado */}
+      <Reveal>
       <section className="cta-top20">
         <h2>¿Quieres saber cuáles son las mejores 20 canciones de la semana?</h2>
         <Link to="/top-20" className="btn btn--primary btn--big">IR AL TOP 20 DE BILLBOARD →</Link>
       </section>
+      </Reveal>
 
       {/* Modal de video de candidato */}
       {playCandidate && (

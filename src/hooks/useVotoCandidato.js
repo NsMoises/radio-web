@@ -24,7 +24,13 @@ export function useVotoCandidato() {
     } catch {}
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    const id = setInterval(load, 15000);
+    const onVis = () => { if (!document.hidden) load(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
+  }, [load]);
 
   const setNombre = useCallback((n) => { setNombreState(n); try { localStorage.setItem(LS_NAME_KEY, n); } catch {} }, []);
 

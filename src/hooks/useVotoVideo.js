@@ -43,7 +43,13 @@ export function useVotoVideo() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { loadFromApi(); }, [loadFromApi]);
+  useEffect(() => {
+    loadFromApi();
+    const id = setInterval(loadFromApi, 15000);
+    const onVis = () => { if (!document.hidden) loadFromApi(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
+  }, [loadFromApi]);
 
   const vote = useCallback(async (videoId) => {
     if (myVote === videoId) {
