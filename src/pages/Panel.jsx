@@ -453,10 +453,47 @@ function EditorEstrenos() {
   const [premieres, setPremieres] = useState([]);
   const [status, setStatus] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [fetchingIds, setFetchingIds] = useState(new Set());
+  const fetchedRef = useRef(new Set());
 
   useEffect(() => { if (data) setPremieres(data.premieres.map((p, i) => ({ ...p, id: i + 1 }))); }, [data]);
 
   const update = (id, field, value) => setPremieres((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+
+  // Auto-fetch del título desde YouTube cuando se pega un tráiler
+  useEffect(() => {
+    const toFetch = [];
+    for (const p of premieres) {
+      const vid = extractYouTubeId(p.url);
+      if (!vid || vid.length < 11) continue;
+      if (fetchedRef.current.has(vid)) continue;
+      if (p.title && p.title.trim()) continue;
+      toFetch.push({ id: p.id, vid });
+    }
+    if (toFetch.length === 0) return;
+    toFetch.forEach(({ id, vid }) => {
+      fetchedRef.current.add(vid);
+      setFetchingIds((prev) => new Set([...prev, id]));
+      fetchYoutubeInfo(vid).then((info) => {
+        setFetchingIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+        if (!info) return;
+        const movieTitle = (info.artist || info.title || "").toUpperCase();
+        if (!movieTitle) return;
+        setPremieres((rs) => rs.map((row) => (row.id === id && !row.title ? { ...row, title: movieTitle } : row)));
+      });
+    });
+  }, [premieres]);
+
+  const fetchNow = async (p) => {
+    const vid = extractYouTubeId(p.url);
+    if (!vid || vid.length < 11) return;
+    setFetchingIds((prev) => new Set([...prev, p.id]));
+    const info = await fetchYoutubeInfo(vid);
+    setFetchingIds((prev) => { const next = new Set(prev); next.delete(p.id); return next; });
+    if (!info) { alert("No se pudo obtener el título desde YouTube."); return; }
+    const movieTitle = (info.artist || info.title || "").toUpperCase();
+    setPremieres((rs) => rs.map((row) => (row.id === p.id ? { ...row, title: movieTitle || row.title } : row)));
+  };
 
   const addEmpty = () => {
     setPremieres((rs) => {
@@ -512,6 +549,7 @@ function EditorEstrenos() {
               <div className="panel-row__row panel-row__row--tags">
                 <span className="panel-field-label">Tráiler YouTube</span>
                 <input type="url" value={p.url || ""} onChange={(e) => update(p.id, "url", e.target.value)} placeholder="https://youtube.com/watch?v=..." />
+                {fetchingIds.has(p.id) ? <span className="panel__fetch-spinner" title="Obteniendo título…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(p)} title="Obtener título desde YouTube">🔄</button>}
               </div>
               <details className="panel-collapse">
                 <summary className="panel-collapse__sum">Póster personalizado (opcional)</summary>
