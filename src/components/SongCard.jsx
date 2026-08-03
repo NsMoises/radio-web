@@ -17,7 +17,7 @@ function useThumb(song) {
 
   if (!videoId) {
     return {
-      src: `https://picsum.photos/seed/${song.id}/400/400`,
+      src: `https://picsum.photos/seed/${song.videoId || song.id}/400/400`,
       onError: () => {}
     };
   }
@@ -30,12 +30,13 @@ function useThumb(song) {
 export default function SongCard({ song, onPick, isPicked, votes, myVote, onVote }) {
   const diff = rankDiff(song);
   const { src, onError } = useThumb(song);
-  const voteCount = votes?.[song.id] ?? 0;
-  const isMyVote = myVote === song.id;
+  const voteId = song.videoId || extractYouTubeId(song.url) || song.id;
+  const voteCount = votes?.[voteId] ?? 0;
+  const isMyVote = myVote === voteId;
 
   const handleVote = (e) => {
     e.stopPropagation();
-    if (onVote) onVote(song.id);
+    if (onVote) onVote(voteId);
   };
 
   return (

@@ -249,7 +249,7 @@ const THUMB_QUALITIES = ["maxresdefault", "hqdefault", "mqdefault", "default"];
 
 function videoToSong(v, fallbackDate) {
   return {
-    id: v.videoId,
+    id: v.videoId || v.id,
     position: v.rank,
     lastWeekPosition: v.lastWeekPosition || 0,
     peakPosition: v.peakPosition || v.rank,
@@ -264,8 +264,9 @@ function videoToSong(v, fallbackDate) {
 function CandidateCard({ c, cv, onPlay }) {
   const [qi, setQi] = useState(0);
   const [imgSrc, setImgSrc] = useState(youtubeThumb(c.videoId, THUMB_QUALITIES[0]));
-  const count = cv.votes?.[c.id] ?? 0;
-  const isMy = cv.myVote === c.id;
+  const voteId = c.videoId || extractYouTubeId(c.url) || c.id;
+  const count = cv.votes?.[voteId] ?? 0;
+  const isMy = cv.myVote === voteId;
   return (
     <div className="candidato-card" onClick={onPlay} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onPlay(); }}>
       <div className="candidato-card__thumb">
@@ -282,7 +283,7 @@ function CandidateCard({ c, cv, onPlay }) {
         <span className="candidato-card__pos">#{c.position}</span>
         <button
           className={"candidato-card__vote" + (isMy ? " candidato-card__vote--done" : "")}
-          onClick={(e) => { e.stopPropagation(); cv.vote(c.id); }}
+          onClick={(e) => { e.stopPropagation(); cv.vote(c.videoId || extractYouTubeId(c.url) || c.id); }}
           title={isMy ? "Retirar voto" : "Votar"}
           aria-label="Votar"
         >
