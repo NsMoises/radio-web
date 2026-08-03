@@ -476,9 +476,9 @@ function EditorEstrenos() {
       setFetchingIds((prev) => new Set([...prev, id]));
       fetchYoutubeInfo(vid).then((info) => {
         setFetchingIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
-        if (!info) return;
+        if (!info) { fetchedRef.current.delete(vid); return; }
         const movieTitle = (info.artist || info.title || "").toUpperCase();
-        if (!movieTitle) return;
+        if (!movieTitle) { fetchedRef.current.delete(vid); return; }
         setPremieres((rs) => rs.map((row) => (row.id === id && !row.title ? { ...row, title: movieTitle } : row)));
       });
     });
