@@ -2,3 +2,4 @@ node_modules/
 dist/
 DATOS ACCESO
 public/api/data/
+.opencode/

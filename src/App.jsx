@@ -8,6 +8,7 @@ import Footer from "./components/Footer.jsx";
 import RadioPlayer from "./components/RadioPlayer.jsx";
 import CursorGlow from "./components/CursorGlow.jsx";
 import FloatingMiniPlayer from "./components/FloatingMiniPlayer.jsx";
+import DarkGradientBg from "./components/DarkGradientBg.jsx";
 
 const Home = lazy(() => import("./pages/Home.jsx"));
 const RankingTop20 = lazy(() => import("./pages/RankingTop20.jsx"));
@@ -77,6 +78,7 @@ export default function App() {
         <StreamProvider>
         <div className="app">
           <CursorGlow />
+          <DarkGradientBg />
           <Navbar />
           <main className="app__main">
             <Suspense fallback={<PageLoader />}>
