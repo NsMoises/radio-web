@@ -5,15 +5,19 @@ function MiniThumb({ song }) {
   const videoId = extractYouTubeId(song.url);
   const qualities = ["maxresdefault", "hqdefault", "mqdefault"];
   const [idx, setIdx] = useState(0);
-  const src = videoId
+  const [broken, setBroken] = useState(false);
+  const src = videoId && !broken
     ? youtubeThumb(videoId, qualities[idx])
-    : `https://picsum.photos/seed/${song.id}/400/400`;
+    : `https://picsum.photos/seed/${song.id}/400/225`;
   return (
     <img
       src={src}
       alt={song.title}
       loading="lazy"
-      onError={() => setIdx((i) => (i < qualities.length - 1 ? i + 1 : i))}
+      onError={() => {
+        if (idx < qualities.length - 1) setIdx(idx + 1);
+        else setBroken(true);
+      }}
     />
   );
 }
