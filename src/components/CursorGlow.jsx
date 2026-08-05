@@ -1,28 +1,36 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useEffect, useRef } from "react";
 
 export default function CursorGlow() {
   const ref = useRef(null);
-  const [pos, setPos] = useState({ x: 50, y: 50 });
-
-  const handlePointer = useCallback((e) => {
-    setPos({
-      x: (e.clientX / window.innerWidth) * 100,
-      y: (e.clientY / window.innerHeight) * 100,
-    });
-  }, []);
+  const target = useRef({ x: 0, y: 0 });
+  const pos = useRef({ x: 0, y: 0 });
+  const raf = useRef(null);
 
   useEffect(() => {
-    window.addEventListener("pointermove", handlePointer);
-    return () => window.removeEventListener("pointermove", handlePointer);
-  }, [handlePointer]);
+    const el = ref.current;
+    if (!el) return;
 
-  return (
-    <div
-      ref={ref}
-      className="cursor-glow"
-      style={{
-        background: `radial-gradient(800px circle at ${pos.x}% ${pos.y}%, rgba(0,229,255,0.10), transparent 60%)`,
-      }}
-    />
-  );
+    const onMove = (e) => {
+      target.current.x = e.clientX;
+      target.current.y = e.clientY;
+    };
+
+    const tick = () => {
+      const p = pos.current;
+      const t = target.current;
+      p.x += (t.x - p.x) * 0.12;
+      p.y += (t.y - p.y) * 0.12;
+      el.style.background = `radial-gradient(480px circle at ${p.x}px ${p.y}px, rgba(0,229,255,0.28) 0%, rgba(0,229,255,0.10) 42%, transparent 72%)`;
+      raf.current = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    raf.current = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      if (raf.current) cancelAnimationFrame(raf.current);
+    };
+  }, []);
+
+  return <div ref={ref} className="cursor-glow" />;
 }
