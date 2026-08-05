@@ -1,11 +1,12 @@
 import { useState } from "react";
-
-const CHANNEL_ID = import.meta.env.VITE_YT_CHANNEL_ID || "UC_CHANNEL_ID_AQUI";
+import { useConfig } from "../hooks/useConfig.js";
 
 export default function LiveCam() {
   const [loaded, setLoaded] = useState(false);
+  const { data: cfg } = useConfig();
+  const channelId = (cfg && cfg.ytChannelId) || import.meta.env.VITE_YT_CHANNEL_ID || "UC_CHANNEL_ID_AQUI";
 
-  const embedUrl = `https://www.youtube.com/embed/live_stream?channel=${CHANNEL_ID}&autoplay=1&mute=1&controls=1&rel=0&modestbranding=1`;
+  const embedUrl = `https://www.youtube.com/embed/live_stream?channel=${channelId}&autoplay=1&mute=1&controls=1&rel=0&modestbranding=1`;
 
   return (
     <section className="livecam">

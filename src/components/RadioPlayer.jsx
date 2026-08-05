@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { STREAM_URL, STATION } from "../config";
 import { useStream } from "../context/StreamContext.jsx";
+import { useConfig } from "../hooks/useConfig.js";
 
 const OFFLINE_MSG = "📡 No estamos al aire — vuelve más tarde";
 
@@ -13,6 +14,8 @@ export default function RadioPlayer() {
   const [volume, setVolume] = useState(0.8);
   const [muted, setMuted] = useState(false);
   const { setStatus } = useStream();
+  const { data: cfg } = useConfig();
+  const streamUrl = cfg?.streamUrl || STREAM_URL;
 
   useEffect(() => {
     setStatus({ playing, offline: loading ? false : offline, loading });
@@ -63,7 +66,7 @@ export default function RadioPlayer() {
       setPlaying(false);
     } else {
       setConnectAttempts((n) => n + 1);
-      audio.src = STREAM_URL;
+      audio.src = streamUrl;
       audio.load();
       setLoading(true);
       audio.play().catch(() => {

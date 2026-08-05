@@ -8,6 +8,7 @@ import { useSpecials } from "../hooks/useSpecials.js";
 import { useBanner } from "../hooks/useBanner.js";
 import { useDjs } from "../hooks/useDjs.js";
 import { useCandidatos } from "../hooks/useCandidatos.js";
+import { useConfig } from "../hooks/useConfig.js";
 import { downloadJson, uploadImage } from "../utils/panel-utils.js";
 import ImgPreview from "../components/ImgPreview.jsx";
 
@@ -1078,6 +1079,89 @@ function EditorCandidatos() {
   );
 }
 
+function EditorStreaming() {
+  const { data, loading, error, save } = useConfig();
+  const [streamUrl, setStreamUrl] = useState("");
+  const [ytChannelId, setYtChannelId] = useState("");
+  const [status, setStatus] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!data) return;
+    setStreamUrl(data.streamUrl || "");
+    setYtChannelId(data.ytChannelId || "");
+  }, [data]);
+
+  const guardar = async () => {
+    if (saving) return;
+    setSaving(true); setStatus(null);
+    const res = await save({ streamUrl, ytChannelId });
+    setSaving(false);
+    if (res.ok) setStatus({ ok: true, msg: "✓ Configuración guardada. El reproductor y la cámara usan el nuevo enlace." });
+    else setStatus({ ok: false, msg: "✕ Error: " + (res.error || "no se pudo guardar") });
+  };
+
+  if (loading) return <p style={{ color: "var(--text-dim)" }}>Cargando configuración…</p>;
+
+  return (
+    <>
+      <header className="panel__head">
+        <div>
+          <h1>📡 Emisión en vivo</h1>
+          <p>Link de streaming y canal de YouTube para la cámara</p>
+          {error === "offline" && <p className="panel__offline">⚠ Sin backend: guardado solo en este navegador.</p>}
+        </div>
+        <div className="panel__actions">
+          <button className="btn btn--primary" onClick={guardar} disabled={saving}>{saving ? "Guardando…" : "💾 Guardar cambios"}</button>
+        </div>
+      </header>
+      {status && <div className={"panel__status" + (status.ok ? " panel__status--ok" : " panel__status--warn")}>{status.msg}</div>}
+      <div className="panel__list" style={{ display: "block" }}>
+        <div className="panel-row">
+          <div className="panel-row__fields">
+            <div className="panel-row__row panel-row__row--tags">
+              <span className="panel-field-label">Link de streaming (audio)</span>
+              <input
+                type="url"
+                value={streamUrl}
+                onChange={(e) => setStreamUrl(e.target.value)}
+                placeholder="https://tu-servidor:puerto/stream"
+                style={{ flex: 1 }}
+                className="panel-row__input--mono"
+              />
+            </div>
+            <p className="panel__hint" style={{ marginTop: 6 }}>
+              Es el enlace que usa el reproductor inferior (el botón ▶ EN DIRECTO). Ej: <code>https://streaming12.elitecomunicacion.es:8208/stream?type=.mp3</code>
+            </p>
+            <div className="panel-row__row panel-row__row--tags" style={{ marginTop: 10 }}>
+              <span className="panel-field-label">Canal YouTube (cámara en vivo)</span>
+              <input
+                type="text"
+                value={ytChannelId}
+                onChange={(e) => setYtChannelId(e.target.value)}
+                placeholder="UC_xxxxxxxxxxxxxxxxxxxxxx (Channel ID)"
+                style={{ flex: 1 }}
+                className="panel-row__input--mono"
+              />
+            </div>
+            <p className="panel__hint" style={{ marginTop: 6 }}>
+              Es el Channel ID (empieza por <code>UC</code>) de tu canal de YouTube para el bloque "📷 Cámara en vivo". Déjalo vacío si no usas cámara.
+            </p>
+            {streamUrl && (
+              <div className="panel__hint" style={{ marginTop: 10 }}>
+                <strong>Vista previa:</strong> el reproductor usará <code>{streamUrl}</code>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <footer className="panel__foot">
+        <button className="btn btn--primary btn--big" onClick={guardar} disabled={saving}>{saving ? "Guardando…" : "💾 Guardar cambios"}</button>
+      </footer>
+    </>
+  );
+}
+
 export default function Panel() {
   const [authed, setAuthed] = useState(null);
   const [pwd, setPwd] = useState("");
@@ -1148,6 +1232,7 @@ export default function Panel() {
         <button className={"panel__tab" + (tab === "djs" ? " panel__tab--active" : "")} onClick={() => setTab("djs")} role="tab" aria-selected={tab === "djs"}>Locutores</button>
         <button className={"panel__tab" + (tab === "candidatos" ? " panel__tab--active" : "")} onClick={() => setTab("candidatos")} role="tab" aria-selected={tab === "candidatos"}>🎯 Candidatos</button>
         <button className={"panel__tab" + (tab === "votos" ? " panel__tab--active" : "")} onClick={() => setTab("votos")} role="tab" aria-selected={tab === "votos"}>🗳️ Votaciones</button>
+        <button className={"panel__tab" + (tab === "stream" ? " panel__tab--active" : "")} onClick={() => setTab("stream")} role="tab" aria-selected={tab === "stream"}>📡 En vivo</button>
         <div className="panel__tab-logout">
           <button className="btn btn--ghost btn--small panel__logout" onClick={logout} title="Cerrar sesión">⏻ Salir</button>
         </div>
@@ -1161,6 +1246,7 @@ export default function Panel() {
       {tab === "djs" && <EditorDjs />}
       {tab === "candidatos" && <EditorCandidatos />}
       {tab === "votos" && <EditorVotaciones />}
+      {tab === "stream" && <EditorStreaming />}
 
       <section className="panel__docs">
         <details>
