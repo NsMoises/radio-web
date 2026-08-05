@@ -5,7 +5,7 @@ const DATA_FILE = DATA_DIR . "/config.json";
 
 $DEFAULT_CONFIG = [
   "streamUrl"   => "https://streaming12.elitecomunicacion.es:8208/stream?type=.mp3",
-  "ytChannelId" => ""
+  "ytChannelId" => "UCodNIEoHHM_H66nlQi2qHPw"
 ];
 
 // Todos los valores de STREAM_URL/YT se cargan tambien por defaults en el frontend,
@@ -30,6 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
   if (!is_array($cfg)) { $cfg = $DEFAULT_CONFIG; }
   // Merge con defaults para no romper si faltan campos
   $cfg = array_merge($DEFAULT_CONFIG, $cfg);
+  $cfg["streamUrl"]   = $cfg["streamUrl"]   ?: $DEFAULT_CONFIG["streamUrl"];
+  $cfg["ytChannelId"] = $cfg["ytChannelId"] ?: $DEFAULT_CONFIG["ytChannelId"];
   echo json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   exit;
 }

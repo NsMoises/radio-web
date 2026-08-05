@@ -4,7 +4,7 @@ import { STREAM_URL } from "../config";
 const API_URL = "/api/config.php";
 const LS_KEY = "radio-web:config:backup";
 
-const DEFAULTS = { streamUrl: STREAM_URL, ytChannelId: "" };
+const DEFAULTS = { streamUrl: STREAM_URL, ytChannelId: "UCodNIEoHHM_H66nlQi2qHPw" };
 
 export function useConfig() {
   const [data, setData] = useState(null);
@@ -18,7 +18,7 @@ export function useConfig() {
       if (!res.ok) throw new Error("API " + res.status);
       const json = await res.json();
       if (!json || typeof json !== "object") throw new Error("Formato inválido");
-      setData({ ...DEFAULTS, ...json });
+      setData({ streamUrl: json.streamUrl || DEFAULTS.streamUrl, ytChannelId: json.ytChannelId || DEFAULTS.ytChannelId });
       try { localStorage.setItem(LS_KEY, JSON.stringify(json)); } catch {}
       return json;
     } catch {
