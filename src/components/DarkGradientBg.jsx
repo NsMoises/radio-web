@@ -1,83 +1,5 @@
 import React, { useEffect, useRef } from "react";
 
-const SPARK_COLORS = [
-  "0, 229, 255",
-  "94, 229, 255",
-  "180, 240, 255",
-  "255, 255, 255",
-];
-
-function useSparks(canvasRef) {
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return () => {};
-
-    let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const particles = [];
-    const MAX = 90;
-
-    function resize() {
-      w = window.innerWidth; h = window.innerHeight;
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    resize();
-
-    function spawn() {
-      if (particles.length >= MAX) return;
-      const rising = Math.random() < 0.7;
-      particles.push({
-        x: Math.random() * w,
-        y: rising ? h + 8 : Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: rising ? -(0.4 + Math.random() * 0.9) : (Math.random() - 0.5) * 0.3,
-        life: 0,
-        max: 200 + Math.random() * 260,
-        size: 1 + Math.random() * 2.2,
-        color: SPARK_COLORS[Math.floor(Math.random() * SPARK_COLORS.length)],
-        twk: Math.random() * Math.PI * 2,
-        twks: 0.04 + Math.random() * 0.06,
-      });
-    }
-
-    function step() {
-      ctx.clearRect(0, 0, w, h);
-      ctx.globalCompositeOperation = "lighter";
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.life++;
-        p.x += p.vx; p.y += p.vy; p.vy += 0.0015; p.vx += (Math.random() - 0.5) * 0.04;
-        p.twk += p.twks;
-        const lt = p.life / p.max;
-        if (lt >= 1 || p.y < -20 || p.x < -20 || p.x > w + 20) { particles.splice(i, 1); continue; }
-        const fade = Math.sin(Math.min(lt * Math.PI, Math.PI));
-        const alpha = fade * (0.55 + Math.sin(p.twk) * 0.4);
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${p.color}, ${Math.max(alpha, 0)})`;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = `rgba(${p.color}, ${alpha})`;
-        ctx.fill();
-      }
-      ctx.shadowBlur = 0;
-      ctx.globalCompositeOperation = "source-over";
-      for (let n = 0; n < 2; n++) spawn();
-      raf = requestAnimationFrame(step);
-    }
-
-    let raf = requestAnimationFrame(step);
-    window.addEventListener("resize", resize);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-    };
-  }, [canvasRef]);
-}
-
 const STREAKS = [
   {
     mask: "linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 20%, rgba(0, 0, 0, 0) 36%, rgb(0, 0, 0) 55%, rgba(0, 0, 0, 0.13) 67%, rgb(0, 0, 0) 78%, rgba(0, 0, 0, 0) 97%)",
@@ -126,8 +48,6 @@ const STYLES = `
 
 export default function DarkGradientBg({ children }) {
   const rootRef = useRef(null);
-  const sparksCanvas = useRef(null);
-  useSparks(sparksCanvas);
 
   useEffect(() => {
     const el = rootRef.current;
@@ -205,13 +125,6 @@ export default function DarkGradientBg({ children }) {
           />
         </div>
       ))}
-
-      {/* Chispas sobre los orbes */}
-      <canvas
-        ref={sparksCanvas}
-        aria-hidden="true"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", opacity: 0.9 }}
-      />
 
       <div
         className={FILL}
