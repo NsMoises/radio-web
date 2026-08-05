@@ -1116,43 +1116,47 @@ function EditorStreaming() {
         </div>
       </header>
       {status && <div className={"panel__status" + (status.ok ? " panel__status--ok" : " panel__status--warn")}>{status.msg}</div>}
-      <div className="panel__list" style={{ display: "block" }}>
-        <div className="panel-row">
-          <div className="panel-row__fields">
-            <div className="panel-row__row panel-row__row--tags">
-              <span className="panel-field-label">Link de streaming (audio)</span>
-              <input
-                type="url"
-                value={streamUrl}
-                onChange={(e) => setStreamUrl(e.target.value)}
-                placeholder="https://tu-servidor:puerto/stream"
-                style={{ flex: 1 }}
-                className="panel-row__input--mono"
-              />
-            </div>
-            <p className="panel__hint" style={{ marginTop: 6 }}>
-              Es el enlace que usa el reproductor inferior (el botón ▶ EN DIRECTO). Ej: <code>https://streaming12.elitecomunicacion.es:8208/stream?type=.mp3</code>
-            </p>
-            <div className="panel-row__row panel-row__row--tags" style={{ marginTop: 10 }}>
-              <span className="panel-field-label">Canal YouTube (cámara en vivo)</span>
-              <input
-                type="text"
-                value={ytChannelId}
-                onChange={(e) => setYtChannelId(e.target.value)}
-                placeholder="UC_xxxxxxxxxxxxxxxxxxxxxx (Channel ID)"
-                style={{ flex: 1 }}
-                className="panel-row__input--mono"
-              />
-            </div>
-            <p className="panel__hint" style={{ marginTop: 6 }}>
-              Es el Channel ID (empieza por <code>UC</code>) de tu canal de YouTube para el bloque "📷 Cámara en vivo". Déjalo vacío si no usas cámara.
-            </p>
-            {streamUrl && (
-              <div className="panel__hint" style={{ marginTop: 10 }}>
-                <strong>Vista previa:</strong> el reproductor usará <code>{streamUrl}</code>
-              </div>
-            )}
+      <div className="panel__list">
+        <div
+          style={{
+            background: "var(--bg-card)", border: "1px solid var(--border)",
+            borderRadius: "var(--radius)", padding: "18px 20px",
+            display: "flex", flexDirection: "column", gap: "10px",
+          }}
+        >
+          <div className="panel-row__row panel-row__row--tags">
+            <span className="panel-field-label">Link de streaming (audio)</span>
+            <input
+              type="url"
+              value={streamUrl}
+              onChange={(e) => setStreamUrl(e.target.value)}
+              placeholder="https://tu-servidor:puerto/stream"
+              style={{ flex: 1, minWidth: "220px", padding: "8px 12px", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", color: "var(--text)", fontSize: "0.9rem" }}
+              className="panel-row__input--mono"
+            />
           </div>
+          <p className="panel__hint" style={{ marginTop: 0 }}>
+            Es el enlace que usa el reproductor inferior (el botón ▶ EN DIRECTO). Ej: <code>https://streaming12.elitecomunicacion.es:8208/stream?type=.mp3</code>
+          </p>
+          <div className="panel-row__row panel-row__row--tags">
+            <span className="panel-field-label">Canal YouTube (cámara en vivo)</span>
+            <input
+              type="text"
+              value={ytChannelId}
+              onChange={(e) => setYtChannelId(e.target.value)}
+              placeholder="UC_xxxxxxxxxxxxxxxxxxxxxx (Channel ID)"
+              style={{ flex: 1, minWidth: "320px", padding: "8px 12px", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", color: "var(--text)", fontSize: "0.9rem" }}
+              className="panel-row__input--mono"
+            />
+          </div>
+          <p className="panel__hint" style={{ marginTop: 0 }}>
+            Es el Channel ID (empieza por <code>UC</code>) de tu canal de YouTube para el bloque "📷 Cámara en vivo". Déjalo vacío si no usas cámara.
+          </p>
+          {streamUrl && (
+            <div className="panel__hint" style={{ marginTop: 4 }}>
+              <strong>Vista previa:</strong> el reproductor usará <code>{streamUrl}</code>
+            </div>
+          )}
         </div>
       </div>
       <footer className="panel__foot">
