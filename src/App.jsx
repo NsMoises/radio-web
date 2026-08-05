@@ -77,8 +77,8 @@ export default function App() {
       <VideoPlayerProvider>
         <StreamProvider>
         <div className="app">
-          <CursorGlow />
           <DarkGradientBg />
+          <CursorGlow />
           <Navbar />
           <main className="app__main">
             <Suspense fallback={<PageLoader />}>

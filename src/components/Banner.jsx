@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
+import bannerFallback from "../data/banner.json";
+
+const FALLBACK_IMAGES = (bannerFallback.slides || []).map((s) => s.image).filter(Boolean);
 
 export default function Banner({ slides, seasonLabel }) {
   const [idx, setIdx] = useState(0);
+  const [failed, setFailed] = useState({});
 
   useEffect(() => {
     if (!slides || slides.length <= 1) return;
@@ -11,10 +15,28 @@ export default function Banner({ slides, seasonLabel }) {
     return () => clearInterval(t);
   }, [slides]);
 
+  useEffect(() => {
+    if (!slides) return;
+    slides.forEach((s, i) => {
+      if (!s.image) { setFailed((f) => ({ ...f, [i]: true })); return; }
+      const img = new Image();
+      img.onload = () => setFailed((f) => ({ ...f, [i]: false }));
+      img.onerror = () => setFailed((f) => ({ ...f, [i]: true }));
+      img.src = s.image;
+    });
+  }, [slides]);
+
   if (!slides || slides.length === 0) return null;
   const current = slides[idx];
 
   const go = (n) => setIdx((n + slides.length) % slides.length);
+
+  const imageFor = (s, i) => {
+    if (!s.image || failed[i]) {
+      return FALLBACK_IMAGES[i % FALLBACK_IMAGES.length] || "";
+    }
+    return s.image;
+  };
 
   return (
     <section className="banner" aria-label="Portada">
@@ -23,7 +45,7 @@ export default function Banner({ slides, seasonLabel }) {
           <div
             key={s.id != null ? s.id : i}
             className={"banner__slide" + (i === idx ? " banner__slide--active" : "")}
-            style={s.image ? { backgroundImage: `url(${s.image})` } : undefined}
+            style={imageFor(s, i) ? { backgroundImage: `url(${imageFor(s, i)})` } : undefined}
           >
             <div className="banner__overlay" />
             <div className="banner__caption">
