@@ -836,7 +836,7 @@ function EditorDjs() {
 
 const CAT_ICONS = { top20: "🎵", top15: "🎬", candidatos: "⭐" };
 
-function VotacionCategory({ icon, label, results, expanded, onToggle }) {
+function VotacionCategory({ icon, label, results, expanded, onToggle, onDelete }) {
   if (results.length === 0) return null;
   const maxVotes = results[0].total;
   return (
@@ -847,17 +847,22 @@ function VotacionCategory({ icon, label, results, expanded, onToggle }) {
           const pct = Math.round((item.total / maxVotes) * 100);
           const isOpen = expanded[item.id];
           return (
-            <div className={"votacion-card" + (isOpen ? " votacion-card--open" : "")} key={item.id}>
+            <div className={"votacion-card" + (isOpen ? " votacion-card--open" : "") + (item.inList === false ? " votacion-card--orphan" : "")} key={item.id}>
               <div className="votacion-card__head" onClick={() => onToggle(item.id)}>
                 <span className="votacion-card__rank">#{idx + 1}</span>
                 <div className="votacion-card__info">
-                  <div className="votacion-card__title">{item.title}</div>
+                  <div className="votacion-card__title">{item.title}{item.inList === false && <span className="votacion-card__orphan-tag">fuera de lista</span>}</div>
                   <div className="votacion-card__artist">{item.artist}</div>
                 </div>
                 <div className="votacion-card__bar-wrap">
                   <div className="votacion-card__bar" style={{ width: pct + "%" }} />
                 </div>
                 <span className="votacion-card__count">{item.total}</span>
+                <button
+                  className="votacion-card__delete"
+                  title="Eliminar todos los votos de este elemento"
+                  onClick={(e) => { e.stopPropagation(); if (onDelete) onDelete(item.id); }}
+                >🗑</button>
                 <span className="votacion-card__arrow">{isOpen ? "▲" : "▼"}</span>
               </div>
               {isOpen && (
@@ -884,6 +889,7 @@ function EditorVotaciones() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({});
+  const [activeCat, setActiveCat] = useState("top20");
 
   const load = useCallback(() => {
     setLoading(true);
@@ -897,11 +903,46 @@ function EditorVotaciones() {
 
   const toggle = (id) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
 
+  const removeVotes = useCallback(async (catKey, id) => {
+    if (!window.confirm("¿Eliminar todos los votos de este elemento? Esta acción no se puede deshacer.")) return;
+    try {
+      const res = await fetch("/api/votaciones.php", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: catKey, id })
+      });
+      const j = await res.json();
+      if (j && j.ok) { load(); }
+      else { window.alert("No se pudo eliminar: " + ((j && j.error) || "error desconocido")); }
+    } catch {
+      window.alert("Error de red al eliminar los votos.");
+    }
+  }, [load]);
+
   if (loading) return <p style={{ color: "var(--text-dim)" }}>Cargando votaciones…</p>;
   if (!data || !data.ok) return <p style={{ color: "var(--text-dim)" }}>No hay votaciones o no se pudieron cargar.</p>;
 
   const cats = data.categories || {};
-  const catsWithVotes = Object.values(cats).filter((c) => c.totalVotes > 0);
+  const catKeys = ["top20", "top15", "candidatos"].filter((k) => cats[k] && cats[k].totalVotes > 0);
+  if (catKeys.length === 0) {
+    return (
+      <>
+        <header className="panel__head">
+          <div>
+            <h1>Votaciones del público</h1>
+            <p>{data.totalVotes || 0} votos totales</p>
+          </div>
+          <div className="panel__actions">
+            <button className="btn btn--ghost btn--small" onClick={load} title="Actualizar">🔄 Actualizar</button>
+          </div>
+        </header>
+        <p className="panel__empty">Aún no hay votos. Cuando los oyentes voten, aparecerán aquí.</p>
+      </>
+    );
+  }
+  if (!catKeys.includes(activeCat)) setActiveCat(catKeys[0]);
+  const cat = cats[activeCat];
 
   return (
     <>
@@ -915,24 +956,26 @@ function EditorVotaciones() {
         </div>
       </header>
 
-      {catsWithVotes.length === 0 ? (
-        <p className="panel__empty">Aún no hay votos. Cuando los oyentes voten, aparecerán aquí.</p>
-      ) : (
-        ["top20", "top15", "candidatos"].map((key) => {
-          const cat = cats[key];
-          if (!cat || cat.results.length === 0) return null;
-          return (
-            <VotacionCategory
-              key={key}
-              icon={CAT_ICONS[key]}
-              label={cat.label}
-              results={cat.results}
-              expanded={expanded}
-              onToggle={toggle}
-            />
-          );
-        })
-      )}
+      <div className="panel__tabs panel__tabs--sub">
+        {catKeys.map((key) => (
+          <button
+            key={key}
+            className={"panel__tab" + (activeCat === key ? " panel__tab--active" : "")}
+            onClick={() => setActiveCat(key)}
+          >
+            {CAT_ICONS[key]} {cats[key].label} <span className="panel__tab-count">{cats[key].totalVotes}</span>
+          </button>
+        ))}
+      </div>
+
+      <VotacionCategory
+        icon={CAT_ICONS[activeCat]}
+        label={cat.label}
+        results={cat.results}
+        expanded={expanded}
+        onToggle={toggle}
+        onDelete={(id) => removeVotes(activeCat, id)}
+      />
     </>
   );
 }

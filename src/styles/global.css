@@ -794,6 +794,20 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
   font-weight: 700; font-size: 1.1rem; color: var(--accent);
   min-width: 36px; text-align: right;
 }
+.votacion-card__delete {
+  background: transparent; border: none; color: var(--text-mute);
+  font-size: 0.9rem; padding: 4px 6px; border-radius: 4px; cursor: pointer;
+  transition: color .15s, background .15s; flex-shrink: 0;
+}
+.votacion-card__delete:hover { color: var(--down); background: rgba(239,91,91,0.15); }
+.votacion-card--orphan { border-color: rgba(239,91,91,0.4); }
+.votacion-card--orphan .votacion-card__title { color: var(--down); }
+.votacion-card__orphan-tag {
+  margin-left: 8px; padding: 1px 8px; border-radius: 8px;
+  background: rgba(239,91,91,0.12); color: var(--down);
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  vertical-align: middle;
+}
 .votacion-card__arrow {
   color: var(--text-mute); font-size: 0.75rem; min-width: 16px;
 }
@@ -1775,6 +1789,13 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 .panel__tab:hover { color: #fff; background: var(--bg-elev); }
 .panel__tab--active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-soft); }
 .panel__tab-logout { margin-left: auto; display: flex; align-items: center; padding: 0 8px; }
+.panel__tab-count {
+  display: inline-block; margin-left: 6px; padding: 1px 7px;
+  border-radius: 10px; background: var(--accent-soft); color: var(--accent);
+  font-size: 0.72rem; font-weight: 700; line-height: 1.5;
+}
+.panel__tab--active .panel__tab-count { background: var(--accent); color: #111; }
+.panel__tabs--sub { margin: 16px 0 0; border-radius: var(--radius); background: var(--bg-card); }
 /* Remove button in panel rows */
 .panel-row__remove {
   background: transparent; border: none; color: var(--down); cursor: pointer;
