@@ -839,25 +839,43 @@ const CAT_ICONS = { top20: "🎵", top15: "🎬", candidatos: "⭐" };
 function VotacionCategory({ icon, label, results, expanded, onToggle, onDelete }) {
   if (results.length === 0) return null;
   const maxVotes = results[0].total;
+  const totalVotes = results.reduce((s, r) => s + r.total, 0);
+  const uniqueVoters = new Set(results.flatMap((r) => r.voters.map((v) => v.nombre))).size;
   return (
     <div className="votaciones-category">
-      <h2 className="votaciones-category__title">{icon} {label}</h2>
+      <div className="votaciones-category__head">
+        <h2 className="votaciones-category__title">{icon} {label}</h2>
+        <div className="votaciones-category__meta">
+          <span>{results.length} elementos</span>
+          <span>{totalVotes} votos</span>
+          <span>{uniqueVoters} votantes</span>
+        </div>
+      </div>
       <div className="votaciones">
         {results.map((item, idx) => {
-          const pct = Math.round((item.total / maxVotes) * 100);
+          const pct = maxVotes > 0 ? Math.round((item.total / maxVotes) * 100) : 0;
           const isOpen = expanded[item.id];
           return (
             <div className={"votacion-card" + (isOpen ? " votacion-card--open" : "") + (item.inList === false ? " votacion-card--orphan" : "")} key={item.id}>
               <div className="votacion-card__head" onClick={() => onToggle(item.id)}>
                 <span className="votacion-card__rank">#{idx + 1}</span>
                 <div className="votacion-card__info">
-                  <div className="votacion-card__title">{item.title}{item.inList === false && <span className="votacion-card__orphan-tag">fuera de lista</span>}</div>
-                  <div className="votacion-card__artist">{item.artist}</div>
+                  <div className="votacion-card__title">
+                    {item.title}
+                    {item.inList === false && <span className="votacion-card__orphan-tag">fuera de lista</span>}
+                  </div>
+                  <div className="votacion-card__artist">
+                    {item.artist}
+                    {item.position > 0 && <span className="votacion-card__position"> · En la lista: #{item.position}</span>}
+                  </div>
                 </div>
                 <div className="votacion-card__bar-wrap">
                   <div className="votacion-card__bar" style={{ width: pct + "%" }} />
                 </div>
-                <span className="votacion-card__count">{item.total}</span>
+                <div className="votacion-card__count">
+                  <span className="votacion-card__count-num">{item.total}</span>
+                  <span className="votacion-card__count-pct">{pct}%</span>
+                </div>
                 <button
                   className="votacion-card__delete"
                   title="Eliminar todos los votos de este elemento"
@@ -868,13 +886,16 @@ function VotacionCategory({ icon, label, results, expanded, onToggle, onDelete }
               {isOpen && (
                 <div className="votacion-card__voters">
                   <div className="votacion-card__voters-title">Votantes ({item.voters.length})</div>
-                  {item.voters.map((v, i) => (
-                    <div className="votacion-voter" key={i}>
-                      <span className="votacion-voter__icon">❤</span>
-                      <span className="votacion-voter__name">{v.nombre}</span>
-                      <span className="votacion-voter__date">{v.date}</span>
-                    </div>
-                  ))}
+                  <div className="votacion-card__voters-list">
+                    {item.voters.map((v, i) => (
+                      <div className="votacion-voter" key={i}>
+                        <span className="votacion-voter__avatar">{(v.nombre || "?").charAt(0).toUpperCase()}</span>
+                        <span className="votacion-voter__icon">❤</span>
+                        <span className="votacion-voter__name">{v.nombre}</span>
+                        <span className="votacion-voter__date">{v.date}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -890,6 +911,8 @@ function EditorVotaciones() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({});
   const [activeCat, setActiveCat] = useState("top20");
+  const [query, setQuery] = useState("");
+  const [allOpen, setAllOpen] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -902,6 +925,19 @@ function EditorVotaciones() {
   useEffect(() => { load(); }, [load]);
 
   const toggle = (id) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
+
+  const toggleAll = () => {
+    if (!data) return;
+    const cat = data.categories[activeCat];
+    if (!cat || !cat.results.length) return;
+    setAllOpen((prev) => {
+      const next = !prev;
+      const obj = {};
+      cat.results.forEach((r) => { obj[r.id] = next; });
+      setExpanded(obj);
+      return next;
+    });
+  };
 
   const removeVotes = useCallback(async (catKey, id) => {
     if (!window.confirm("¿Eliminar todos los votos de este elemento? Esta acción no se puede deshacer.")) return;
@@ -919,6 +955,8 @@ function EditorVotaciones() {
       window.alert("Error de red al eliminar los votos.");
     }
   }, [load]);
+
+  const switchCat = (key) => { setActiveCat(key); setQuery(""); setAllOpen(false); };
 
   if (loading) return <p style={{ color: "var(--text-dim)" }}>Cargando votaciones…</p>;
   if (!data || !data.ok) return <p style={{ color: "var(--text-dim)" }}>No hay votaciones o no se pudieron cargar.</p>;
@@ -941,8 +979,18 @@ function EditorVotaciones() {
       </>
     );
   }
-  if (!catKeys.includes(activeCat)) setActiveCat(catKeys[0]);
-  const cat = cats[activeCat];
+  const effectiveCat = catKeys.includes(activeCat) ? activeCat : catKeys[0];
+  const cat = cats[effectiveCat];
+
+  const q = query.trim().toLowerCase();
+  const results = cat.results.filter((item) => {
+    if (!q) return true;
+    const hay = (item.title + " " + item.artist).toLowerCase();
+    if (hay.includes(q)) return true;
+    return item.voters.some((v) => (v.nombre || "").toLowerCase().includes(q));
+  });
+
+  const uniqueVoters = new Set(cat.results.flatMap((r) => r.voters.map((v) => v.nombre))).size;
 
   return (
     <>
@@ -952,6 +1000,9 @@ function EditorVotaciones() {
           <p>{data.totalVotes || 0} votos totales</p>
         </div>
         <div className="panel__actions">
+          <button className="btn btn--ghost btn--small" onClick={toggleAll} title={allOpen ? "Contraer todo" : "Expandir todo"}>
+            {allOpen ? "🔼 Contraer todo" : "🔽 Expandir todo"}
+          </button>
           <button className="btn btn--ghost btn--small" onClick={load} title="Actualizar">🔄 Actualizar</button>
         </div>
       </header>
@@ -960,22 +1011,54 @@ function EditorVotaciones() {
         {catKeys.map((key) => (
           <button
             key={key}
-            className={"panel__tab" + (activeCat === key ? " panel__tab--active" : "")}
-            onClick={() => setActiveCat(key)}
+            className={"panel__tab" + (effectiveCat === key ? " panel__tab--active" : "")}
+            onClick={() => switchCat(key)}
           >
             {CAT_ICONS[key]} {cats[key].label} <span className="panel__tab-count">{cats[key].totalVotes}</span>
           </button>
         ))}
       </div>
 
-      <VotacionCategory
-        icon={CAT_ICONS[activeCat]}
-        label={cat.label}
-        results={cat.results}
-        expanded={expanded}
-        onToggle={toggle}
-        onDelete={(id) => removeVotes(activeCat, id)}
-      />
+      <div className="votaciones-stats">
+        <div className="votaciones-stat">
+          <span className="votaciones-stat__num">{cat.totalVotes}</span>
+          <span className="votaciones-stat__label">Votos</span>
+        </div>
+        <div className="votaciones-stat">
+          <span className="votaciones-stat__num">{cat.results.length}</span>
+          <span className="votaciones-stat__label">Elementos con votos</span>
+        </div>
+        <div className="votaciones-stat">
+          <span className="votaciones-stat__num">{uniqueVoters}</span>
+          <span className="votaciones-stat__label">Votantes</span>
+        </div>
+      </div>
+
+      <div className="votaciones-toolbar">
+        <input
+          type="search"
+          className="votaciones-search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar canción, artista o votante…"
+        />
+        {results.length !== cat.results.length && (
+          <span className="votaciones-filter-count">{results.length} de {cat.results.length}</span>
+        )}
+      </div>
+
+      {results.length > 0 ? (
+        <VotacionCategory
+          icon={CAT_ICONS[effectiveCat]}
+          label={cat.label}
+          results={results}
+          expanded={expanded}
+          onToggle={toggle}
+          onDelete={(id) => removeVotes(effectiveCat, id)}
+        />
+      ) : (
+        <p className="panel__empty">Sin resultados para “{query}”.</p>
+      )}
     </>
   );
 }
@@ -1294,19 +1377,6 @@ export default function Panel() {
       {tab === "candidatos" && <EditorCandidatos />}
       {tab === "votos" && <EditorVotaciones />}
       {tab === "stream" && <EditorStreaming />}
-
-      <section className="panel__docs">
-        <details>
-          <summary>¿Cómo preparar el panel en cPanel? (desplegar)</summary>
-          <ol>
-            <li>Sube toda la carpeta <code>dist</code> a <code>public_html</code> vía FTP o el Gestor de archivos.</li>
-            <li>Verifica que existan <code>public_html/api/ranking.php</code>, <code>public_html/api/videos.php</code> y sus respectivos <code>data/</code>.</li>
-            <li>Dar permisos de escritura: <code>chmod 775 public_html/api/data</code> (y <code>chmod 664 *.json</code>).</li>
-            <li>Cambia <code>PANEL_PASSWORD</code> dentro de <code>api/auth.php</code> para mayor seguridad.</li>
-            <li>Abre <code>https://tudominio.es/panel</code>, escribe la contraseña y edita.</li>
-          </ol>
-        </details>
-      </section>
     </div>
   );
 }
