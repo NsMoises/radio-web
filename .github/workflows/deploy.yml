@@ -26,13 +26,9 @@ jobs:
           mkdir -p deploy-secret
           if [ -n "${{ secrets.PANEL_PASSWORD }}" ]; then
             echo "${{ secrets.PANEL_PASSWORD }}" > deploy-secret/panel-secret.txt
+            echo "PANEL_PASSWORD presente -> se actualizara el panel-secret.txt del servidor."
           else
-            # Sin secret definido: genera uno aleatorio y lo muestra en el log.
-            openssl rand -base64 24 | tr -d '\n' > deploy-secret/panel-secret.txt
-            echo "::warning::PANEL_PASSWORD no definido en los secrets del repo."
-            echo "::warning::Se genero una contrasena aleatoria del panel:"
-            cat deploy-secret/panel-secret.txt
-            echo
+            echo "PANEL_PASSWORD no definido -> el panel-secret.txt del servidor NO se tocara (si no existe, el login quedara bloqueado hasta crearlo)."
           fi
           echo "Listo."
 
@@ -44,6 +40,15 @@ jobs:
             set ftp:ssl-protect-data true
             open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
             mirror --reverse --delete --exclude api/data/ --exclude api/uploads/ --verbose dist/ ${{ secrets.FTP_PATH }}
-            put deploy-secret/panel-secret.txt -o ${{ secrets.FTP_PATH }}/api/data/panel-secret.txt
-            quit
           "
+          if [ -f deploy-secret/panel-secret.txt ]; then
+            lftp -c "
+              set ssl:verify-certificate no
+              set ftp:ssl-allow true
+              set ftp:ssl-protect-data true
+              open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
+              put deploy-secret/panel-secret.txt -o ${{ secrets.FTP_PATH }}/api/data/panel-secret.txt
+              quit
+            "
+          fi
+          echo "Deploy completo."
