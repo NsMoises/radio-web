@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Bloquear acceso directo a los datos (JSON con IPs de votantes, ranking, etc.).
+  # El acceso debe hacerse siempre a traves de los endpoints PHP.
+  RewriteRule ^data(/|$) - [F,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Ninguna cabecera de cache para los datos
+  <FilesMatch "\.(json)$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>

@@ -36,6 +36,31 @@ function saveVotes($list) {
   return file_put_contents(DATA_FILE, json_encode($list, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 }
 
+// Valida que el videoId exista realmente en el Top 15.
+function isVideoInList($videoId, $rf) {
+  if (!file_exists($rf)) return true;
+  $rd = json_decode(file_get_contents($rf), true) ?: [];
+  foreach (($rd["videos"] ?? []) as $s) {
+    $vid = is_string($s["videoId"] ?? "") ? $s["videoId"] : "";
+    if ($vid === "") $vid = extractVideoId($s["url"] ?? "");
+    if ($vid !== "" && $vid === $videoId) return true;
+  }
+  return false;
+}
+
+// Cooldown anti-spam: minimo COOLDOWN_MIN seg entre votos de la misma IP.
+const COOLDOWN_MIN = 30;
+function lastVoteAt($list, $ip) {
+  $t = 0;
+  foreach ($list as $v) {
+    if (($v["ip"] ?? "") === $ip && !empty($v["createdAt"])) {
+      $ts = strtotime($v["createdAt"]);
+      if ($ts !== false && $ts > $t) $t = $ts;
+    }
+  }
+  return $t;
+}
+
 // Migra votos viejos (videoId = posicion numerica) a la identidad estable (videoId de YouTube).
 function migrateLegacyVotes($list) {
   $rf = DATA_DIR . "/top15videos.json";
@@ -125,6 +150,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
     if ($found) saveVotes($list);
     echo json_encode(buildResponse($list, $ip, $today));
+    exit;
+  }
+
+  // El videoId debe estar en la lista actual (anti-spam / items fuera de lista)
+  $rf = DATA_DIR . "/top15videos.json";
+  if (!isVideoInList($videoId, $rf)) {
+    http_response_code(400);
+    echo json_encode(["ok" => false, "error" => "Ese video no está en el Top 15"]);
+    exit;
+  }
+
+  // Cooldown por IP
+  $last = lastVoteAt($list, $ip);
+  if ($last > 0 && (time() - $last) < COOLDOWN_MIN) {
+    http_response_code(429);
+    echo json_encode(["ok" => false, "error" => "Espera unos segundos antes de votar de nuevo", "votes" => getVoteCounts($list), "myVote" => myVote($list, $ip, $today)]);
     exit;
   }
 

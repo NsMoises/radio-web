@@ -21,6 +21,21 @@ jobs:
       - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
 
+      - name: Prepare panel secret
+        run: |
+          mkdir -p deploy-secret
+          if [ -n "${{ secrets.PANEL_PASSWORD }}" ]; then
+            echo "${{ secrets.PANEL_PASSWORD }}" > deploy-secret/panel-secret.txt
+          else
+            # Sin secret definido: genera uno aleatorio y lo muestra en el log.
+            openssl rand -base64 24 | tr -d '\n' > deploy-secret/panel-secret.txt
+            echo "::warning::PANEL_PASSWORD no definido en los secrets del repo."
+            echo "::warning::Se genero una contrasena aleatoria del panel:"
+            cat deploy-secret/panel-secret.txt
+            echo
+          fi
+          echo "Listo."
+
       - name: Upload to cPanel via lftp
         run: |
           lftp -c "
@@ -29,5 +44,6 @@ jobs:
             set ftp:ssl-protect-data true
             open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
             mirror --reverse --delete --exclude api/data/ --exclude api/uploads/ --verbose dist/ ${{ secrets.FTP_PATH }}
+            put deploy-secret/panel-secret.txt -o ${{ secrets.FTP_PATH }}/api/data/panel-secret.txt
             quit
           "

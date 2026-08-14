@@ -11,10 +11,9 @@ $DEFAULT_CONFIG = [
 // Todos los valores de STREAM_URL/YT se cargan tambien por defaults en el frontend,
 // pero aqui se persisten para permitir editarlos desde el panel sin recompilar.
 
-header("Access-Control-Allow-Origin: " . ($_SERVER["HTTP_ORIGIN"] ?? "*"));
+corsAllowed();
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Credentials: true");
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Content-Type: application/json; charset=utf-8");
 
