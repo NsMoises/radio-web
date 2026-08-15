@@ -93,7 +93,7 @@ export default function Home() {
       <Reveal>
       <section className="block">
         <div className="block__head">
-          <h2 className="block__title"><span className="block__icon">🎬</span> Los 15 temazos</h2>
+          <h2 className="block__title"><span className="block__icon">🎬</span> Los 15 temazos en español</h2>
           <Link to="/top-15" className="block__link">Ver ranking completo →</Link>
         </div>
         {vv.voteMsg && <div className="vote-toast">{vv.voteMsg}</div>}
