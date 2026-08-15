@@ -60,7 +60,7 @@ export default function Home() {
       <Reveal>
       <section className="block">
         <div className="block__head">
-          <h2 className="block__title">Los 20 temazos</h2>
+          <h2 className="block__title"><span className="block__icon">🔥</span> La Lista de las 20</h2>
           <Link to="/top-20" className="block__link">Ver ranking completo →</Link>
         </div>
         <div className="topp20-mini-grid">
@@ -77,7 +77,7 @@ export default function Home() {
       <Reveal>
       <section className="block">
         <div className="block__head">
-          <h2 className="block__title">Candidatos para la próxima semana</h2>
+          <h2 className="block__title"><span className="block__icon">⭐</span> Candidatos para la próxima semana</h2>
           <Link to="/candidatos" className="block__link">Ver todos →</Link>
         </div>
         {cv.voteMsg && <div className="vote-toast">{cv.voteMsg}</div>}
@@ -93,7 +93,7 @@ export default function Home() {
       <Reveal>
       <section className="block">
         <div className="block__head">
-          <h2 className="block__title">Los 15 vídeos de la semana</h2>
+          <h2 className="block__title"><span className="block__icon">🎬</span> Los 15 temazos</h2>
           <Link to="/top-15" className="block__link">Ver ranking completo →</Link>
         </div>
         {vv.voteMsg && <div className="vote-toast">{vv.voteMsg}</div>}
@@ -116,7 +116,7 @@ export default function Home() {
       <Reveal>
       <section className="block">
         <div className="block__head">
-          <h2 className="block__title">Estrenos de cine</h2>
+          <h2 className="block__title"><span className="block__icon">🍿</span> Estrenos de cine</h2>
           <Link to="/cine" className="block__link">Ver todos →</Link>
         </div>
         <div className="movies-grid movies-grid--home">
@@ -131,7 +131,7 @@ export default function Home() {
       <Reveal>
       <section className="block">
         <div className="block__head">
-          <h2 className="block__title">Noticias del momento</h2>
+          <h2 className="block__title"><span className="block__icon">📰</span> Noticias del momento</h2>
           <Link to="/noticias" className="block__link">Ver todas →</Link>
         </div>
         <div className="news-grid">
@@ -160,7 +160,7 @@ export default function Home() {
       <Reveal>
       <section className="block">
         <div className="block__head">
-          <h2 className="block__title">{monthLabel}</h2>
+          <h2 className="block__title"><span className="block__icon">🌟</span> {monthLabel}</h2>
           <span className="block__link block__link--muted">Cada semana un invitado</span>
         </div>
         <div className="specials-grid">
@@ -185,7 +185,7 @@ export default function Home() {
       <Reveal>
       <section className="block">
         <div className="block__head">
-          <h2 className="block__title">Nuestros locutores</h2>
+          <h2 className="block__title"><span className="block__icon">🎙️</span> Nuestros locutores</h2>
           <span className="block__link block__link--muted">El equipo que suena</span>
         </div>
         <div className="dj-3d-wrap">
