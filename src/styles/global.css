@@ -1463,6 +1463,18 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 .video-modal__title { font-family: var(--font-serif); font-size: 1.3rem; font-weight: 600; }
 .video-modal__artist { color: var(--text-dim); font-size: 0.92rem; }
 .video-modal__extra { font-size: 0.85rem; color: var(--text-mute); margin-top: 4px; }
+.video-modal__badge {
+  margin-top: 8px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  color: #ffd700;
+  border: 1px solid #ffd700;
+  padding: 5px 9px;
+  border-radius: 4px;
+  display: inline-block;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.15);
+}
 
 /* Fila seleccionada (tabla, por si se reutiliza) */
 .songrow--picked { background: rgba(0,229,255,0.10) !important; }

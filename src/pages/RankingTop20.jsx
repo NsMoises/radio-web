@@ -116,6 +116,7 @@ export default function RankingTop20() {
               <div>
                 <div className="video-modal__title">{active.title}</div>
                 <div className="video-modal__artist">{active.artist}</div>
+                {active.badge && <div className="video-modal__badge">{active.badge}</div>}
                 <div className="video-modal__extra">
                   <span className={"trend " + active.trend.className}>
                     {active.trend.symbol} {active.trend.label}

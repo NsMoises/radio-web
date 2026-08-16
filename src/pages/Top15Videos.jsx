@@ -19,7 +19,8 @@ function videoToSong(v, fallbackDate) {
     artist: v.artist,
     url: `https://www.youtube.com/watch?v=${v.videoId}`,
     enteredAt: v.enteredAt || fallbackDate,
-    isNew: !!v.isNew
+    isNew: !!v.isNew,
+    badge: v.badge || ""
   };
 }
 
@@ -128,6 +129,7 @@ export default function Top15Videos() {
               <div>
                 <div className="video-modal__title">{active.title}</div>
                 <div className="video-modal__artist">{active.artist}</div>
+                {active.badge && <div className="video-modal__badge">{active.badge}</div>}
                 <div className="video-modal__extra">
                   <span className={"trend " + active.trend.className}>
                     {active.trend.symbol} {active.trend.label}

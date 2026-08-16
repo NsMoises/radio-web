@@ -246,6 +246,7 @@ export default function Home() {
               <div>
                 <div className="video-modal__title">{playVideo.title}</div>
                 <div className="video-modal__artist">{playVideo.artist}</div>
+                {playVideo.badge && <div className="video-modal__badge">{playVideo.badge}</div>}
                 <div className="video-modal__extra">
                   <span className={"trend " + playVideo.trend.className}>
                     {playVideo.trend.symbol} {playVideo.trend.label}
@@ -277,7 +278,8 @@ function videoToSong(v, fallbackDate) {
     artist: v.artist,
     url: `https://www.youtube.com/watch?v=${v.videoId}`,
     enteredAt: v.enteredAt || fallbackDate,
-    isNew: !!v.isNew
+    isNew: !!v.isNew,
+    badge: v.badge || ""
   };
 }
 
