@@ -48,7 +48,10 @@ function UploadBtn({ onUpload, label = "Subir imagen" }) {
 const today = new Date().toISOString().slice(0, 10);
 
 const currentWeekLabel = () =>
-  weekRangeLabel(new Date().toISOString().slice(0, 10));
+  "Semana del " + new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+
+const currentWeekRangeLabel = (startDay) =>
+  weekRangeLabel(new Date().toISOString().slice(0, 10), startDay);
 
 function EditorTop20() {
   const { data, loading, error, save } = useRanking();
@@ -66,7 +69,7 @@ function EditorTop20() {
   }, [data]);
 
   const defaultWeek = useMemo(() => {
-    return weekRangeLabel(new Date().toISOString().slice(0, 10));
+    return weekRangeLabel(new Date().toISOString().slice(0, 10), 5);
   }, []);
 
   // Auto-fetch YouTube info for songs with videoId but empty title/artist
@@ -128,7 +131,7 @@ function EditorTop20() {
   const rotateWeek = () => {
     if (!confirm("¿Marcar nueva semana? Las posiciones actuales se guardarán como \"semana anterior\" y la fecha/etiqueta se actualizarán a la semana actual. Debes pulsar Guardar para que se publique.")) return;
     setRows((rs) => rs.map((r) => ({ ...r, lastWeekPosition: r.position, isNew: false })));
-    setHeader({ lastUpdatedAt: new Date().toISOString().slice(0, 10), weekLabel: currentWeekLabel() });
+    setHeader({ lastUpdatedAt: new Date().toISOString().slice(0, 10), weekLabel: currentWeekRangeLabel(5) });
     setStatus({ ok: false, msg: "Rotado. Recuerda pulsar Guardar cambios para publicar." });
   };
 
@@ -225,7 +228,8 @@ function EditorTop15() {
   }, [data]);
 
   const defaultWeek = useMemo(() => {
-    return weekRangeLabel(new Date().toISOString().slice(0, 10));
+    const d = new Date();
+    return "Semana del " + d.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
   }, []);
 
   useEffect(() => {

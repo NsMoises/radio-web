@@ -19,7 +19,7 @@ export default function RankingTop20() {
   const updated = data?.lastUpdatedAt
     ? new Date(data.lastUpdatedAt).toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })
     : "—";
-  const weekTitle = data?.lastUpdatedAt ? weekRangeLabel(data.lastUpdatedAt) : "Semana actual";
+  const weekTitle = data?.lastUpdatedAt ? weekRangeLabel(data.lastUpdatedAt, 5) : "Semana actual";
 
   // Cierra el modal con tecla Escape
   useEffect(() => {
