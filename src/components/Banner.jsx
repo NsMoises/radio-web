@@ -49,7 +49,6 @@ export default function Banner({ slides, seasonLabel }) {
             {imageFor(s, i) ? (
               <img className="banner__img" src={imageFor(s, i)} alt={s.title} loading={i === 0 ? "eager" : "lazy"} />
             ) : null}
-            <div className="banner__overlay" />
             <div className="banner__caption">
               <span className="banner__season">{seasonLabel}</span>
               <h2 className="banner__title">{s.title}</h2>

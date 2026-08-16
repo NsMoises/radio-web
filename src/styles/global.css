@@ -133,14 +133,11 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 .banner__slide--active { position: relative; opacity: 1; }
 .banner__img { display: block; width: 100%; height: auto; }
 .banner__slide--active { opacity: 1; }
-.banner__overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(11,8,7,0.2) 0%, rgba(11,8,7,0.7) 60%, rgba(11,8,7,0.9) 100%);
-}
 .banner__caption {
-  position: relative; z-index: 2;
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
   padding: 32px 40px;
   max-width: 680px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 .banner__season {
   display: inline-block; font-size: 0.74rem; font-weight: 700;
