@@ -126,7 +126,9 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 .banner__slides { position: absolute; inset: 0; }
 .banner__slide {
   position: absolute; inset: 0;
-  background-size: cover; background-position: center;
+  background-size: contain; background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--bg-card);
   background-image: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   opacity: 0; transition: opacity .6s ease-in-out;
   display: flex; align-items: flex-end;
