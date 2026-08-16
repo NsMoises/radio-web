@@ -45,8 +45,10 @@ export default function Banner({ slides, seasonLabel }) {
           <div
             key={s.id != null ? s.id : i}
             className={"banner__slide" + (i === idx ? " banner__slide--active" : "")}
-            style={imageFor(s, i) ? { backgroundImage: `url(${imageFor(s, i)})` } : undefined}
           >
+            {imageFor(s, i) ? (
+              <img className="banner__img" src={imageFor(s, i)} alt={s.title} loading={i === 0 ? "eager" : "lazy"} />
+            ) : null}
             <div className="banner__overlay" />
             <div className="banner__caption">
               <span className="banner__season">{seasonLabel}</span>
