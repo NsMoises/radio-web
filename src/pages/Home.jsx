@@ -251,7 +251,6 @@ export default function Home() {
                   <span className={"trend " + playVideo.trend.className}>
                     {playVideo.trend.symbol} {playVideo.trend.label}
                   </span>
-                  <span> · Pico #{playVideo.peak}</span>
                   <span className="modal-weeks"> · {playVideo.weeksLabel} en lista</span>
                 </div>
               </div>

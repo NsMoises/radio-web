@@ -196,7 +196,6 @@ function EditorTop20() {
                 <div className="panel-row__row">
                   <label>Entró: <input type="date" value={(r.enteredAt || today).slice(0, 10)} onChange={(e) => update(r.id, "enteredAt", e.target.value)} /></label>
                   <label>Sem. ant.: <input type="number" min="0" max="20" value={r.lastWeekPosition ?? 0} onChange={(e) => update(r.id, "lastWeekPosition", e.target.value)} /></label>
-                  <label>Pico: <input type="number" min="1" max="20" value={r.peakPosition ?? (i + 1)} onChange={(e) => update(r.id, "peakPosition", e.target.value)} /></label>
                   <label className="panel-row__check"><input type="checkbox" checked={!!r.isNew} onChange={(e) => { update(r.id, "isNew", e.target.checked); if (e.target.checked) { update(r.id, "lastWeekPosition", 0); update(r.id, "peakPosition", 0); } }} /> Nueva</label>
                 </div>
                 <div className="panel-row__row panel-row__row--wide">
@@ -372,7 +371,6 @@ function EditorTop15() {
                 <div className="panel-row__row">
                   <label>Entró: <input type="date" value={(v.enteredAt || today).slice(0, 10)} onChange={(e) => update(v.id, "enteredAt", e.target.value)} /></label>
                   <label>Sem. ant.: <input type="number" min="0" max="15" value={v.lastWeekPosition ?? 0} onChange={(e) => update(v.id, "lastWeekPosition", e.target.value)} /></label>
-                  <label>Pico: <input type="number" min="1" max="15" value={v.peakPosition ?? (i + 1)} onChange={(e) => update(v.id, "peakPosition", e.target.value)} /></label>
                   <label className="panel-row__check"><input type="checkbox" checked={!!v.isNew} onChange={(e) => { update(v.id, "isNew", e.target.checked); if (e.target.checked) { update(v.id, "lastWeekPosition", 0); update(v.id, "peakPosition", 0); } }} /> Nueva</label>
                 </div>
                 <div className="panel-row__row panel-row__row--wide">

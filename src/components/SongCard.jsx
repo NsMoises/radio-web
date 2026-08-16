@@ -91,10 +91,6 @@ export default function SongCard({ song, onPick, isPicked, votes, myVote, onVote
           </span>
         </div>
         <div className="songcard__stats">
-          <span className="songcard__stat" title="Pico histórico">
-            <span className="songcard__stat-label">Pico</span>
-            <span className="songcard__stat-value">#{song.peak || song.position}</span>
-          </span>
           <span className="songcard__stat songcard__stat--weeks" title="Semanas en lista (auto)">
             <span className="songcard__stat-label">En lista</span>
             <span className="songcard__stat-value">{song.weeksLabel}</span>

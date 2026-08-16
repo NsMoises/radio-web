@@ -121,7 +121,6 @@ export default function RankingTop20() {
                   <span className={"trend " + active.trend.className}>
                     {active.trend.symbol} {active.trend.label}
                   </span>
-                  <span> · Pico #{active.peak}</span>
                   <span className="modal-weeks"> · {active.weeksLabel} en lista</span>
                 </div>
               </div>
