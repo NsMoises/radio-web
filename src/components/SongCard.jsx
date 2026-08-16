@@ -48,6 +48,7 @@ export default function SongCard({ song, onPick, isPicked, votes, myVote, onVote
       <div className="songcard__cover">
         <img src={src} alt={song.title} loading="lazy" onError={onError} />
         <span className="songcard__pos">#{song.position}</span>
+        {song.badge && <span className="songcard__badge" title={song.badge}>{song.badge}</span>}
         {song.position === 1 && <span className="songcard__crown" aria-hidden="true">👑</span>}
         <span
           className={"songcard__trend " + (song.trend?.className || "")}
