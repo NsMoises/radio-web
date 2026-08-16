@@ -10,6 +10,7 @@ import { useDjs } from "../hooks/useDjs.js";
 import { useCandidatos } from "../hooks/useCandidatos.js";
 import { useConfig } from "../hooks/useConfig.js";
 import { downloadJson, uploadImage } from "../utils/panel-utils.js";
+import { weekRangeLabel } from "../utils/date-utils.js";
 import ImgPreview from "../components/ImgPreview.jsx";
 
 function UploadBtn({ onUpload, label = "Subir imagen" }) {
@@ -47,7 +48,7 @@ function UploadBtn({ onUpload, label = "Subir imagen" }) {
 const today = new Date().toISOString().slice(0, 10);
 
 const currentWeekLabel = () =>
-  "Semana del " + new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+  weekRangeLabel(new Date().toISOString().slice(0, 10));
 
 function EditorTop20() {
   const { data, loading, error, save } = useRanking();
@@ -65,8 +66,7 @@ function EditorTop20() {
   }, [data]);
 
   const defaultWeek = useMemo(() => {
-    const d = new Date();
-    return "Semana del " + d.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+    return weekRangeLabel(new Date().toISOString().slice(0, 10));
   }, []);
 
   // Auto-fetch YouTube info for songs with videoId but empty title/artist
@@ -225,8 +225,7 @@ function EditorTop15() {
   }, [data]);
 
   const defaultWeek = useMemo(() => {
-    const d = new Date();
-    return "Semana del " + d.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+    return weekRangeLabel(new Date().toISOString().slice(0, 10));
   }, []);
 
   useEffect(() => {

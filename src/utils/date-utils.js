@@ -36,28 +36,28 @@ export function formatDate(iso) {
   });
 }
 
-// Devuelve el rango de la semana Lunes→Domingo que contiene la fecha dada.
-// Formato llamativo: "Semana 13 al 19 de Julio"
+// Devuelve el rango de la semana Viernes→Jueves que contiene la fecha dada.
+// Formato llamativo: "Semana 14 al 20 de Agosto"
 export function weekRangeLabel(iso) {
   if (!iso) return "";
   const d = new Date(iso);
   if (isNaN(d.getTime())) return "";
-  // El día de la semana: 0=Dom ... 6=Sáb. Convertimos a Lunes=0.
-  const dow = (d.getDay() + 6) % 7;
-  const monday = new Date(d);
-  monday.setDate(d.getDate() - dow);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
+  // El día de la semana: 0=Dom ... 6=Sáb. Viernes=5. Retrocedemos hasta el viernes de la semana.
+  const daysSinceFriday = (d.getDay() - 5 + 7) % 7;
+  const friday = new Date(d);
+  friday.setDate(d.getDate() - daysSinceFriday);
+  const thursday = new Date(friday);
+  thursday.setDate(friday.getDate() + 6);
 
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const fmtDayMonth = (x) =>
     cap(x.toLocaleDateString("es-ES", { day: "numeric", month: "long" }));
 
-  // Si caen en el mismo mes: "13 al 19 de Julio"
-  if (monday.getMonth() === sunday.getMonth()) {
-    const month = cap(monday.toLocaleDateString("es-ES", { month: "long" }));
-    return `Semana ${monday.getDate()} al ${sunday.getDate()} de ${month}`;
+  // Si caen en el mismo mes: "14 al 20 de Agosto"
+  if (friday.getMonth() === thursday.getMonth()) {
+    const month = cap(friday.toLocaleDateString("es-ES", { month: "long" }));
+    return `Semana ${friday.getDate()} al ${thursday.getDate()} de ${month}`;
   }
-  // Si cruzan meses: "27 de Junio al 3 de Julio"
-  return `Semana del ${fmtDayMonth(monday)} al ${fmtDayMonth(sunday)}`;
+  // Si cruzan meses: "31 de Julio al 6 de Agosto"
+  return `Semana del ${fmtDayMonth(friday)} al ${fmtDayMonth(thursday)}`;
 }

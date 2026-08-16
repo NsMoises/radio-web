@@ -55,8 +55,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   if (!isset($data["lastUpdatedAt"])) { $data["lastUpdatedAt"] = date("Y-m-d"); }
   if (!isset($data["weekLabel"]) || $data["weekLabel"] === "") {
     $months = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-    $m = (int)date("n") - 1;
-    $data["weekLabel"] = "Semana del " . date("d") . " de " . ucfirst($months[$m]) . " de " . date("Y");
+    // La semana va de viernes a jueves.
+    $dow = (int)date("w");                        // 0=Dom ... 6=Sáb, viernes=5
+    $daysSinceFriday = ($dow - 5 + 7) % 7;
+    $start = strtotime("-$daysSinceFriday day");  // viernes
+    $end   = strtotime("+" . (6 - $daysSinceFriday) . " day"); // jueves
+    $mS = (int)date("n", $start) - 1;
+    $mE = (int)date("n", $end) - 1;
+    if ($mS === $mE) {
+      $data["weekLabel"] = "Semana " . date("j", $start) . " al " . date("j", $end) . " de " . ucfirst($months[$mS]) . " de " . date("Y", $start);
+    } else {
+      $data["weekLabel"] = "Semana del " . date("j", $start) . " de " . ucfirst($months[$mS]) . " al " . date("j", $end) . " de " . ucfirst($months[$mE]) . " de " . date("Y", $start);
+    }
   }
 
   $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
