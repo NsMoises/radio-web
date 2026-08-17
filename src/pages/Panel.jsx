@@ -1127,7 +1127,7 @@ function EditorCandidatos() {
 
   useEffect(() => {
     if (!data) return;
-    setRows(data.candidatos.map((c, i) => ({ ...c, id: c.videoId || extractYouTubeId(c.url) || c.id || i + 1, videoId: c.videoId || extractYouTubeId(c.url) || "" })));
+    setRows(data.candidatos.map((c, i) => ({ ...c, _key: "c" + i, id: c.videoId || extractYouTubeId(c.url) || c.id || i + 1, videoId: c.videoId || extractYouTubeId(c.url) || "" })));
     setWeekLabel(data.weekLabel || "");
   }, [data]);
 
@@ -1141,28 +1141,40 @@ function EditorCandidatos() {
     if (toFetch.length === 0) return;
     toFetch.forEach((r) => {
       fetchedRef.current.add(r.videoId);
-      setFetchingIds((prev) => new Set([...prev, r.id]));
+      setFetchingIds((prev) => new Set([...prev, r._key]));
       fetchYoutubeInfo(r.videoId).then((info) => {
-        setFetchingIds((prev) => { const next = new Set(prev); next.delete(r.id); return next; });
+        setFetchingIds((prev) => { const next = new Set(prev); next.delete(r._key); return next; });
         if (!info) return;
         setRows((rs) => rs.map((row) => {
-          if (row.id !== r.id) return row;
+          if (row._key !== r._key) return row;
           return { ...row, title: info.title || row.title || "", artist: info.artist || row.artist || "" };
         }));
       });
     });
   }, [rows]);
 
-  const update = (id, field, value) => setRows((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+  const update = (key, field, value) => {
+    if (field === "videoId" && value) {
+      const clean = extractYouTubeId(value) || value.trim();
+      if (clean.length >= 11) {
+        const exists = rows.some((r) => r._key !== key && (r.videoId || "").trim() === clean);
+        if (exists) {
+          window.alert("Ese video ya está en otro candidato. Cada candidato debe ser único; usa ➕ Añadir para uno nuevo.");
+          return;
+        }
+      }
+    }
+    setRows((rs) => rs.map((r) => (r._key === key ? { ...r, [field]: value } : r)));
+  };
 
   const fetchNow = async (r) => {
     if (!r.videoId || r.videoId.length < 11) return;
-    setFetchingIds((prev) => new Set([...prev, r.id]));
+    setFetchingIds((prev) => new Set([...prev, r._key]));
     const info = await fetchYoutubeInfo(r.videoId);
-    setFetchingIds((prev) => { const next = new Set(prev); next.delete(r.id); return next; });
+    setFetchingIds((prev) => { const next = new Set(prev); next.delete(r._key); return next; });
     if (!info) { alert("No se pudo obtener info del video."); return; }
     setRows((rs) => rs.map((row) => {
-      if (row.id !== r.id) return row;
+      if (row._key !== r._key) return row;
       return { ...row, title: info.title || row.title, artist: info.artist || row.artist };
     }));
   };
@@ -1178,20 +1190,23 @@ function EditorCandidatos() {
 
   const addEmpty = () => {
     setRows((rs) => {
-      const maxId = rs.reduce((m, r) => Math.max(m, r.id || 0), 0);
-      return [...rs, { id: maxId + 1, position: rs.length + 1, title: "", artist: "", videoId: "", cover: "" }];
+      const maxKey = rs.reduce((m, r) => Math.max(m, parseInt((r._key || "c0").slice(1), 10) || 0), 0);
+      return [...rs, { _key: "c" + (maxKey + 1), id: maxKey + 1, position: rs.length + 1, title: "", artist: "", videoId: "", cover: "" }];
     });
   };
 
-  const removeRow = (id) => {
+  const removeRow = (key) => {
     if (!confirm("¿Eliminar este candidato?")) return;
-    setRows((rs) => rs.filter((r) => r.id !== id).map((r, i) => ({ ...r, position: i + 1 })));
+    setRows((rs) => rs.filter((r) => r._key !== key).map((r, i) => ({ ...r, position: i + 1 })));
   };
 
   const handleSave = async () => {
     if (saving) return;
     setSaving(true); setStatus(null);
-    const payload = { weekLabel, candidatos: rows.map((r, i) => ({ ...r, position: i + 1 })) };
+    const payload = { weekLabel, candidatos: rows.map((r, i) => {
+      const { _key, ...rest } = r;
+      return { ...rest, position: i + 1 };
+    }) };
     const res = await save(payload);
     setSaving(false);
     if (res.ok) setStatus({ ok: true, msg: "✓ Guardado. Los candidatos están actualizados." });
@@ -1223,13 +1238,13 @@ function EditorCandidatos() {
         {rows.map((r, i) => {
           const thumb = youtubeThumb(r.videoId);
           return (
-            <div className="panel-row" key={r.id || i}>
+            <div className="panel-row" key={r._key || r.id || i}>
               <div className="panel-row__pos">
                 <span className="panel-row__num">#{i + 1}</span>
                 <div className="panel-row__arrows">
                   <button onClick={() => move(i, -1)} disabled={i === 0} title="Subir">▲</button>
                   <button onClick={() => move(i, 1)} disabled={i === rows.length - 1} title="Bajar">▼</button>
-                  <button className="panel-row__remove" onClick={() => removeRow(r.id)} title="Eliminar">✕</button>
+                  <button className="panel-row__remove" onClick={() => removeRow(r._key)} title="Eliminar">✕</button>
                 </div>
               </div>
               <div className="panel-row__thumb">
@@ -1237,12 +1252,12 @@ function EditorCandidatos() {
               </div>
               <div className="panel-row__fields panel-row__fields--compact">
                 <div className="panel-row__row">
-                  <input type="text" value={r.title || ""} onChange={(e) => update(r.id, "title", e.target.value)} placeholder="Título" />
-                  <input type="text" value={r.artist || ""} onChange={(e) => update(r.id, "artist", e.target.value)} placeholder="Artista" />
+                  <input type="text" value={r.title || ""} onChange={(e) => update(r._key, "title", e.target.value)} placeholder="Título" />
+                  <input type="text" value={r.artist || ""} onChange={(e) => update(r._key, "artist", e.target.value)} placeholder="Artista" />
                 </div>
                 <div className="panel-row__row">
-                  <input type="text" value={r.videoId || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw) || raw; update(r.id, "videoId", extracted); if (extracted) update(r.id, "id", extracted); }} placeholder="Link o ID de YouTube" style={{ flex: 1 }} />
-                  {fetchingIds.has(r.id) ? <span title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(r)} title="Obtener título y artista desde YouTube">🔄</button>}
+                  <input type="text" value={r.videoId || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw) || raw; update(r._key, "videoId", extracted); if (extracted) update(r._key, "id", extracted); }} placeholder="Link o ID de YouTube" style={{ flex: 1 }} />
+                  {fetchingIds.has(r._key) ? <span title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(r)} title="Obtener título y artista desde YouTube">🔄</button>}
                 </div>
               </div>
             </div>
