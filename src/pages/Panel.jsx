@@ -966,6 +966,31 @@ function EditorVotaciones() {
     }
   }, [load]);
 
+  const removeOrphans = useCallback(async (catKey) => {
+    const cat = data?.categories?.[catKey];
+    const orphans = (cat?.results || []).filter((r) => r.inList === false);
+    if (orphans.length === 0) { window.alert("No hay elementos fuera de lista en esta categoría."); return; }
+    const totalVotos = orphans.reduce((s, r) => s + r.total, 0);
+    if (!window.confirm(`¿Eliminar TODOS los votos de los ${orphans.length} elementos fuera de lista (${totalVotos} votos)? Esta acción no se puede deshacer.`)) return;
+    let removed = 0;
+    try {
+      for (const o of orphans) {
+        const res = await fetch("/api/votaciones.php", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category: catKey, id: o.id })
+        });
+        const j = await res.json();
+        if (j && j.ok) removed += (j.removed || 0);
+      }
+      load();
+      window.alert(`Listo: se eliminaron ${removed} votos de elementos fuera de lista.`);
+    } catch {
+      window.alert("Error de red al eliminar los votos.");
+    }
+  }, [data, load]);
+
   const switchCat = (key) => { setActiveCat(key); setQuery(""); setAllOpen(false); };
 
   if (loading) return <p style={{ color: "var(--text-dim)" }}>Cargando votaciones…</p>;
@@ -1016,6 +1041,24 @@ function EditorVotaciones() {
           <button className="btn btn--ghost btn--small" onClick={load} title="Actualizar">🔄 Actualizar</button>
         </div>
       </header>
+
+      <div className="votaciones-orphanbar">
+        {(() => {
+          const orphans = cat.results.filter((r) => r.inList === false);
+          if (orphans.length === 0) return <span className="votaciones-orphanbar__ok">✓ No hay elementos fuera de lista en esta categoría.</span>;
+          const totalVotos = orphans.reduce((s, r) => s + r.total, 0);
+          return (
+            <>
+              <span className="votaciones-orphanbar__info">
+                ⚠ {orphans.length} elemento(s) fuera de lista · {totalVotos} votos
+              </span>
+              <button className="btn btn--danger btn--small" onClick={() => removeOrphans(effectiveCat)}>
+                🗑 Borrar votos fuera de lista
+              </button>
+            </>
+          );
+        })()}
+      </div>
 
       <div className="panel__tabs panel__tabs--sub">
         {catKeys.map((key) => (

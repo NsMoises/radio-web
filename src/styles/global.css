@@ -816,6 +816,25 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 .votaciones-search:focus { border-color: var(--accent-dim); outline: none; }
 .votaciones-filter-count { font-size: 0.8rem; color: var(--text-mute); }
 
+/* Barra de aviso de elementos fuera de lista */
+.votaciones-orphanbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 14px; padding: 10px 14px;
+  background: rgba(239,91,91,0.08); border: 1px solid rgba(239,91,91,0.3);
+  border-radius: var(--radius-sm);
+}
+.votaciones-orphanbar__ok {
+  color: var(--text-mute); font-size: 0.85rem;
+}
+.votaciones-orphanbar__info {
+  color: var(--down); font-size: 0.85rem; font-weight: 600;
+}
+.votaciones-orphanbar .btn--danger {
+  color: var(--down); border-color: rgba(239,91,91,0.4);
+  background: rgba(239,91,91,0.08);
+}
+.votaciones-orphanbar .btn--danger:hover { background: rgba(239,91,91,0.2); }
+
 .votaciones { display: flex; flex-direction: column; gap: 10px; }
 .votacion-card {
   background: var(--bg-card); border: 1px solid var(--border);
