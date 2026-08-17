@@ -225,7 +225,7 @@ function EditorTop15() {
 
   useEffect(() => {
     if (!data) return;
-    setVideos(data.videos.map((v, i) => ({ ...v, id: extractYouTubeId(v.url) || v.videoId || v.id || i + 1, videoId: extractYouTubeId(v.url) || v.videoId || "" })));
+    setVideos(data.videos.map((v, i) => ({ ...v, _key: "v" + i, id: extractYouTubeId(v.url) || v.videoId || v.id || i + 1, videoId: extractYouTubeId(v.url) || v.videoId || "" })));
     setHeader({ lastUpdatedAt: data.lastUpdatedAt || today, weekLabel: data.weekLabel || "" });
   }, [data]);
 
@@ -244,12 +244,12 @@ function EditorTop15() {
     if (toFetch.length === 0) return;
     toFetch.forEach((r) => {
       fetchedRef.current.add(r.videoId);
-      setFetchingIds((prev) => new Set([...prev, r.id]));
+      setFetchingIds((prev) => new Set([...prev, r._key]));
       fetchYoutubeInfo(r.videoId).then((info) => {
-        setFetchingIds((prev) => { const next = new Set(prev); next.delete(r.id); return next; });
+        setFetchingIds((prev) => { const next = new Set(prev); next.delete(r._key); return next; });
         if (!info) return;
         setVideos((rs) => rs.map((row) => {
-          if (row.id !== r.id) return row;
+          if (row._key !== r._key) return row;
           return {
             ...row,
             title: info.title ? info.title.toUpperCase() : row.title || "",
@@ -263,12 +263,12 @@ function EditorTop15() {
   const fetchNow = async (r) => {
     const vid = extractYouTubeId(r.url) || r.videoId;
     if (!vid || vid.length < 11) return;
-    setFetchingIds((prev) => new Set([...prev, r.id]));
+    setFetchingIds((prev) => new Set([...prev, r._key]));
     const info = await fetchYoutubeInfo(vid);
-    setFetchingIds((prev) => { const next = new Set(prev); next.delete(r.id); return next; });
+    setFetchingIds((prev) => { const next = new Set(prev); next.delete(r._key); return next; });
     if (!info) { alert("No se pudo obtener info del video. Abrí F12 > Console para ver detalles."); return; }
     setVideos((rs) => rs.map((row) => {
-      if (row.id !== r.id) return row;
+      if (row._key !== r._key) return row;
       return {
         ...row,
         title: info.title ? info.title.toUpperCase() : row.title,
@@ -278,7 +278,7 @@ function EditorTop15() {
     }));
   };
 
-  const update = (id, field, value) => setVideos((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+  const update = (key, field, value) => setVideos((rs) => rs.map((r) => (r._key === key ? { ...r, [field]: value } : r)));
 
   const move = (index, dir) => setVideos((rs) => {
     const next = [...rs];
@@ -298,14 +298,14 @@ function EditorTop15() {
 
   const addEmpty = () => {
     setVideos((rs) => {
-      const maxId = rs.reduce((m, v) => Math.max(m, v.id || 0), 0);
-      return [...rs, { id: maxId + 1, rank: rs.length + 1, title: "", artist: "", url: "", videoId: "", enteredAt: today, lastWeekPosition: 0, peakPosition: 0, isNew: false }];
+      const maxKey = rs.reduce((m, v) => Math.max(m, parseInt((v._key || "v0").slice(1), 10) || 0), 0);
+      return [...rs, { _key: "v" + (maxKey + 1), id: maxKey + 1, rank: rs.length + 1, title: "", artist: "", url: "", videoId: "", enteredAt: today, lastWeekPosition: 0, peakPosition: 0, isNew: false }];
     });
   };
 
-  const removeVideo = (id) => {
+  const removeVideo = (key) => {
     if (!confirm("¿Eliminar este vídeo?")) return;
-    setVideos((rs) => rs.filter((r) => r.id !== id).map((r, i) => ({ ...r, rank: i + 1 })));
+    setVideos((rs) => rs.filter((r) => r._key !== key).map((r, i) => ({ ...r, rank: i + 1 })));
   };
 
   const guardar = async () => {
@@ -314,7 +314,10 @@ function EditorTop15() {
     const payload = {
       lastUpdatedAt: header.lastUpdatedAt || today,
       weekLabel: header.weekLabel || defaultWeek,
-      videos: videos.map((v, i) => ({ ...v, rank: i + 1, lastWeekPosition: parseInt(v.lastWeekPosition, 10) || 0, peakPosition: parseInt(v.peakPosition, 10) || i + 1 }))
+      videos: videos.map((v, i) => {
+        const { _key, ...rest } = v;
+        return { ...rest, rank: i + 1, lastWeekPosition: parseInt(v.lastWeekPosition, 10) || 0, peakPosition: parseInt(v.peakPosition, 10) || i + 1 };
+      })
     };
     const res = await save(payload);
     setSaving(false);
@@ -349,32 +352,32 @@ function EditorTop15() {
           const vid = extractYouTubeId(v.url);
           const thumb = vid ? youtubeThumb(vid, "hqdefault") : null;
           return (
-            <div className="panel-row" key={v.id || i}>
+            <div className="panel-row" key={v._key || v.id || i}>
               <div className="panel-row__pos">
                 <span className="panel-row__num">#{v.rank || i + 1}</span>
                 <div className="panel-row__arrows">
                   <button onClick={() => move(i, -1)} disabled={i === 0} title="Subir">▲</button>
                   <button onClick={() => move(i, 1)} disabled={i === videos.length - 1} title="Bajar">▼</button>
-                  <button className="panel-row__remove" onClick={() => removeVideo(v.id)} title="Eliminar">✕</button>
+                  <button className="panel-row__remove" onClick={() => removeVideo(v._key)} title="Eliminar">✕</button>
                 </div>
               </div>
               <div className="panel-row__thumb">
                 {thumb ? <img src={thumb} alt="" onError={(e) => { e.target.style.display = "none"; }} /> : <span className="panel-row__nothumb">sin miniatura</span>}
               </div>
               <div className="panel-row__fields">
-                <input type="text" value={v.title || ""} onChange={(e) => update(v.id, "title", e.target.value)} placeholder="Título" />
-                <input type="text" value={v.artist || ""} onChange={(e) => update(v.id, "artist", e.target.value)} placeholder="Artista" />
+                <input type="text" value={v.title || ""} onChange={(e) => update(v._key, "title", e.target.value)} placeholder="Título" />
+                <input type="text" value={v.artist || ""} onChange={(e) => update(v._key, "artist", e.target.value)} placeholder="Artista" />
                 <div className="panel-row__row panel-row__row--wide">
-                  <input type="text" value={v.url || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw); update(v.id, "url", raw); if (extracted) { update(v.id, "videoId", extracted); update(v.id, "id", extracted); } }} placeholder="Pega el enlace de YouTube" className="panel-row__input--mono" />
-                  {fetchingIds.has(v.id) ? <span className="panel__fetch-spinner" title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(v)} title="Obtener título y artista desde YouTube" style={{ fontSize: "0.9rem", padding: "2px 8px" }}>🔄</button>}
+                  <input type="text" value={v.url || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw); update(v._key, "url", raw); if (extracted) { update(v._key, "videoId", extracted); update(v._key, "id", extracted); } }} placeholder="Pega el enlace de YouTube" className="panel-row__input--mono" />
+                  {fetchingIds.has(v._key) ? <span className="panel__fetch-spinner" title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(v)} title="Obtener título y artista desde YouTube" style={{ fontSize: "0.9rem", padding: "2px 8px" }}>🔄</button>}
                 </div>
                 <div className="panel-row__row">
-                  <label>Entró: <input type="date" value={(v.enteredAt || today).slice(0, 10)} onChange={(e) => update(v.id, "enteredAt", e.target.value)} /></label>
-                  <label>Sem. ant.: <input type="number" min="0" max="15" value={v.lastWeekPosition ?? 0} onChange={(e) => update(v.id, "lastWeekPosition", e.target.value)} /></label>
-                  <label className="panel-row__check"><input type="checkbox" checked={!!v.isNew} onChange={(e) => { update(v.id, "isNew", e.target.checked); if (e.target.checked) { update(v.id, "lastWeekPosition", 0); update(v.id, "peakPosition", 0); } }} /> Nueva</label>
+                  <label>Entró: <input type="date" value={(v.enteredAt || today).slice(0, 10)} onChange={(e) => update(v._key, "enteredAt", e.target.value)} /></label>
+                  <label>Sem. ant.: <input type="number" min="0" max="15" value={v.lastWeekPosition ?? 0} onChange={(e) => update(v._key, "lastWeekPosition", e.target.value)} /></label>
+                  <label className="panel-row__check"><input type="checkbox" checked={!!v.isNew} onChange={(e) => { update(v._key, "isNew", e.target.checked); if (e.target.checked) { update(v._key, "lastWeekPosition", 0); update(v._key, "peakPosition", 0); } }} /> Nueva</label>
                 </div>
                 <div className="panel-row__row panel-row__row--wide">
-                  <label style={{ flex: 1 }}>Distintivo: <input type="text" value={v.badge || ""} onChange={(e) => update(v.id, "badge", e.target.value)} placeholder="Ej: NUMERO UNO POR 03 SEMANAS CONSECUTIVAS" className="panel-row__input--mono" /></label>
+                  <label style={{ flex: 1 }}>Distintivo: <input type="text" value={v.badge || ""} onChange={(e) => update(v._key, "badge", e.target.value)} placeholder="Ej: NUMERO UNO POR 03 SEMANAS CONSECUTIVAS" className="panel-row__input--mono" /></label>
                 </div>
               </div>
             </div>
