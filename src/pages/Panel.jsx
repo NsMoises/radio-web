@@ -1518,8 +1518,8 @@ export default function Panel() {
         <button className={"panel__tab" + (tab === "premieres" ? " panel__tab--active" : "")} onClick={() => setTab("premieres")} role="tab" aria-selected={tab === "premieres"}>Estrenos</button>
         <button className={"panel__tab" + (tab === "specials" ? " panel__tab--active" : "")} onClick={() => setTab("specials")} role="tab" aria-selected={tab === "specials"}>Especiales</button>
         <button className={"panel__tab" + (tab === "banner" ? " panel__tab--active" : "")} onClick={() => setTab("banner")} role="tab" aria-selected={tab === "banner"}>Banner</button>
+        <button className={"panel__tab" + (tab === "programs" ? " panel__tab--active" : "")} onClick={() => setTab("programs")} role="tab" aria-selected={tab === "programs"}>Programación</button>
         <button className={"panel__tab" + (tab === "djs" ? " panel__tab--active" : "")} onClick={() => setTab("djs")} role="tab" aria-selected={tab === "djs"}>Locutores</button>
-        <button className={"panel__tab" + (tab === "programs" ? " panel__tab--active" : "")} onClick={() => setTab("programs")} role="tab" aria-selected={tab === "programs"}>🕒 Programación</button>
         <button className={"panel__tab" + (tab === "candidatos" ? " panel__tab--active" : "")} onClick={() => setTab("candidatos")} role="tab" aria-selected={tab === "candidatos"}>🎯 Candidatos</button>
         <button className={"panel__tab" + (tab === "votos" ? " panel__tab--active" : "")} onClick={() => setTab("votos")} role="tab" aria-selected={tab === "votos"}>🗳️ Votaciones</button>
         <button className={"panel__tab" + (tab === "stream" ? " panel__tab--active" : "")} onClick={() => setTab("stream")} role="tab" aria-selected={tab === "stream"}>📡 En vivo</button>
@@ -1533,8 +1533,8 @@ export default function Panel() {
       {tab === "premieres" && <EditorEstrenos />}
       {tab === "specials" && <EditorEspeciales />}
       {tab === "banner" && <EditorBanner />}
-      {tab === "djs" && <EditorDjs />}
       {tab === "programs" && <EditorProgramacion />}
+      {tab === "djs" && <EditorDjs />}
       {tab === "candidatos" && <EditorCandidatos />}
       {tab === "votos" && <EditorVotaciones />}
       {tab === "stream" && <EditorStreaming />}

@@ -41,6 +41,13 @@ jobs:
             open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
             mirror --reverse --delete --exclude api/data/ --exclude api/uploads/ --verbose dist/ ${{ secrets.FTP_PATH }}
           "
+          lftp -c "
+            set ssl:verify-certificate no
+            set ftp:ssl-allow true
+            set ftp:ssl-protect-data true
+            open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
+            mirror --reverse --no-perms --exclude data/ --exclude uploads/ --verbose public/api/ ${{ secrets.FTP_PATH }}/api/
+          "
           if [ -f deploy-secret/panel-secret.txt ]; then
             lftp -c "
               set ssl:verify-certificate no

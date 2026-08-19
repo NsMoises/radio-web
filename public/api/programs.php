@@ -24,12 +24,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   if (!is_array($data) || !isset($data["programs"]) || !is_array($data["programs"])) {
     http_response_code(400); echo json_encode(["ok" => false, "error" => "JSON inválido"]); exit;
   }
+$validDays = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
   foreach ($data["programs"] as $i => &$p) {
-    $p["title"] = isset($p["title"]) ? trim($p["title"]) : "(sin título)";
-    $p["host"]  = isset($p["host"]) ? trim($p["host"]) : "";
     $p["day"]   = isset($p["day"]) ? trim($p["day"]) : "Lunes";
+    if (!in_array($p["day"], $validDays)) { $p["day"] = "Lunes"; }
     $p["start"] = isset($p["start"]) ? trim($p["start"]) : "";
     $p["end"]   = isset($p["end"]) ? trim($p["end"]) : "";
+    $p["title"] = isset($p["title"]) ? trim($p["title"]) : "";
+    $p["host"]  = isset($p["host"]) ? trim($p["host"]) : "";
     $p["desc"]  = isset($p["desc"]) ? trim($p["desc"]) : "";
     if (!isset($p["id"])) { $p["id"] = $i + 1; }
   }
