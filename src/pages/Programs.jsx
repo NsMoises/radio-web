@@ -1,11 +1,12 @@
 import { useState } from "react";
-import programs from "../data/programs.json";
+import { usePrograms } from "../hooks/usePrograms.js";
 
 const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
 export default function Programs() {
+  const { data, loading } = usePrograms();
   const [day, setDay] = useState("Lunes");
-  const shows = programs.programs
+  const shows = (data?.programs || [])
     .filter((p) => p.day === day)
     .sort((a, b) => a.start.localeCompare(b.start));
 
@@ -32,7 +33,9 @@ export default function Programs() {
 
       <div className="schedule__day">
         <h2 className="schedule__day-title">{day}</h2>
-        {shows.length === 0 ? (
+        {loading ? (
+          <p className="schedule__empty">Cargando programación…</p>
+        ) : shows.length === 0 ? (
           <p className="schedule__empty">Sin programación este día.</p>
         ) : shows.length === 1 && !shows[0].start ? (
           <p className="schedule__empty">DESCANSO</p>

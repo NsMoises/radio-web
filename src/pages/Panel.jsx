@@ -8,6 +8,7 @@ import { useSpecials } from "../hooks/useSpecials.js";
 import { useBanner } from "../hooks/useBanner.js";
 import { useDjs } from "../hooks/useDjs.js";
 import { useCandidatos } from "../hooks/useCandidatos.js";
+import { usePrograms } from "../hooks/usePrograms.js";
 import { useConfig } from "../hooks/useConfig.js";
 import { downloadJson, uploadImage } from "../utils/panel-utils.js";
 import { weekRangeLabel } from "../utils/date-utils.js";
@@ -846,6 +847,96 @@ function EditorDjs() {
 
 const CAT_ICONS = { top20: "🎵", top15: "🎬", candidatos: "⭐" };
 
+const PROG_DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+
+function EditorProgramacion() {
+  const { data, loading, error, save } = usePrograms();
+  const [shows, setShows] = useState([]);
+  const [day, setDay] = useState("Lunes");
+  const [status, setStatus] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => { if (data) setShows(data.programs.map((p, i) => ({ ...p, _key: i + 1 }))); }, [data]);
+
+  const update = (key, field, value) => setShows((rs) => rs.map((r) => (r._key === key ? { ...r, [field]: value } : r)));
+
+  const addEmpty = () => {
+    setShows((rs) => {
+      const maxKey = rs.reduce((m, v) => Math.max(m, v._key || 0), 0);
+      return [...rs, { _key: maxKey + 1, day, start: "", end: "", title: "", host: "", desc: "" }];
+    });
+  };
+
+  const remove = (key) => { if (!confirm("¿Eliminar este programa?")) return; setShows((rs) => rs.filter((r) => r._key !== key)); };
+
+  const guardar = async () => {
+    if (saving) return; setSaving(true);
+    const payload = shows.map(({ _key, ...p }) => p);
+    const res = await save({ programs: payload });
+    setSaving(false);
+    if (res.ok) setStatus({ ok: true, msg: "✓ Programación guardada." });
+    else if (res.offline) setStatus({ ok: false, msg: "⚠ Sin backend: guardado solo local." });
+    else setStatus({ ok: false, msg: "✕ Error: " + (res.error || "") });
+  };
+  const exportBackup = () => downloadJson({ programs: shows.map(({ _key, ...p }) => p) }, "programs-backup.json");
+
+  if (loading) return <p style={{ color: "var(--text-dim)" }}>Cargando programación…</p>;
+
+  const dayShows = shows.filter((p) => p.day === day).sort((a, b) => a.start.localeCompare(b.start));
+
+  return (
+    <>
+      <header className="panel__head">
+        <div><h1>Programación</h1><p>{shows.length} programas en total</p>{error === "offline" && <p className="panel__offline">⚠ Sin backend</p>}</div>
+        <div className="panel__actions">
+          <button className="btn btn--ghost btn--small" onClick={addEmpty}>➕ Añadir</button>
+          <button className="btn btn--ghost btn--small" onClick={exportBackup}>⬇ Backup</button>
+          <button className="btn btn--primary" onClick={guardar} disabled={saving}>{saving ? "Guardando…" : "💾 Guardar cambios"}</button>
+        </div>
+      </header>
+      {status && <div className={"panel__status" + (status.ok ? " panel__status--ok" : " panel__status--warn")}>{status.msg}</div>}
+      <div className="schedule-tabs" role="tablist">
+        {PROG_DAYS.map((d) => (
+          <button
+            key={d}
+            role="tab"
+            aria-selected={day === d}
+            className={"schedule-tab" + (day === d ? " schedule-tab--active" : "")}
+            onClick={() => setDay(d)}
+          >{d.slice(0, 3)}</button>
+        ))}
+      </div>
+      <div className="panel__list">
+        {dayShows.length === 0 && <p className="panel__empty">Sin programas este día. Pulsa "➕ Añadir" para crear el primero.</p>}
+        {dayShows.map((p) => (
+          <div className="panel-row" key={p._key}>
+            <div className="panel-row__order">{p.day.slice(0, 3)}</div>
+            <div className="panel-row__fields">
+              <div className="panel-row__row panel-row__row--top">
+                <input type="text" value={p.title || ""} onChange={(e) => update(p._key, "title", e.target.value)} placeholder="Nombre del programa" className="panel-input--lg" />
+                <button className="panel-row__remove" onClick={() => remove(p._key)} title="Eliminar programa">✕</button>
+              </div>
+              <div className="panel-row__row panel-row__row--tags">
+                <span className="panel-field-label">Horario</span>
+                <input type="time" value={p.start || ""} onChange={(e) => update(p._key, "start", e.target.value)} title="Inicio" />
+                <input type="time" value={p.end || ""} onChange={(e) => update(p._key, "end", e.target.value)} title="Fin" />
+                <span className="panel-field-label">Locutor/a</span>
+                <input type="text" value={p.host || ""} onChange={(e) => update(p._key, "host", e.target.value)} placeholder="Con…" style={{ flex: 1 }} />
+              </div>
+              <textarea rows={2} value={p.desc || ""} onChange={(e) => update(p._key, "desc", e.target.value)} placeholder="Descripción del programa" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <footer className="panel__foot">
+        <button className="btn btn--ghost btn--small" onClick={addEmpty}>➕ Añadir programa</button>
+        <button className="btn btn--primary btn--big" onClick={guardar} disabled={saving}>{saving ? "Guardando…" : "💾 Guardar cambios"}</button>
+        <button className="btn btn--ghost btn--big" onClick={exportBackup}>⬇ Backup</button>
+      </footer>
+    </>
+  );
+}
+
 function VotacionCategory({ icon, label, results, expanded, onToggle, onDelete }) {
   if (results.length === 0) return null;
   const maxVotes = results[0].total;
@@ -1428,6 +1519,7 @@ export default function Panel() {
         <button className={"panel__tab" + (tab === "specials" ? " panel__tab--active" : "")} onClick={() => setTab("specials")} role="tab" aria-selected={tab === "specials"}>Especiales</button>
         <button className={"panel__tab" + (tab === "banner" ? " panel__tab--active" : "")} onClick={() => setTab("banner")} role="tab" aria-selected={tab === "banner"}>Banner</button>
         <button className={"panel__tab" + (tab === "djs" ? " panel__tab--active" : "")} onClick={() => setTab("djs")} role="tab" aria-selected={tab === "djs"}>Locutores</button>
+        <button className={"panel__tab" + (tab === "programs" ? " panel__tab--active" : "")} onClick={() => setTab("programs")} role="tab" aria-selected={tab === "programs"}>🕒 Programación</button>
         <button className={"panel__tab" + (tab === "candidatos" ? " panel__tab--active" : "")} onClick={() => setTab("candidatos")} role="tab" aria-selected={tab === "candidatos"}>🎯 Candidatos</button>
         <button className={"panel__tab" + (tab === "votos" ? " panel__tab--active" : "")} onClick={() => setTab("votos")} role="tab" aria-selected={tab === "votos"}>🗳️ Votaciones</button>
         <button className={"panel__tab" + (tab === "stream" ? " panel__tab--active" : "")} onClick={() => setTab("stream")} role="tab" aria-selected={tab === "stream"}>📡 En vivo</button>
@@ -1442,6 +1534,7 @@ export default function Panel() {
       {tab === "specials" && <EditorEspeciales />}
       {tab === "banner" && <EditorBanner />}
       {tab === "djs" && <EditorDjs />}
+      {tab === "programs" && <EditorProgramacion />}
       {tab === "candidatos" && <EditorCandidatos />}
       {tab === "votos" && <EditorVotaciones />}
       {tab === "stream" && <EditorStreaming />}
