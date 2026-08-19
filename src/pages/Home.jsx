@@ -252,6 +252,7 @@ export default function Home() {
                     {playVideo.trend.symbol} {playVideo.trend.label}
                   </span>
                   <span className="modal-weeks"> · {playVideo.weeksLabel} en lista</span>
+                  <span className="modal-lastweek"> · Sem. ant. {playVideo.lastWeekPosition > 0 ? "#" + playVideo.lastWeekPosition : "—"}</span>
                 </div>
               </div>
             </div>

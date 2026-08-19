@@ -122,6 +122,7 @@ export default function RankingTop20() {
                     {active.trend.symbol} {active.trend.label}
                   </span>
                   <span className="modal-weeks"> · {active.weeksLabel} en lista</span>
+                  <span className="modal-lastweek"> · Sem. ant. {active.lastWeekPosition > 0 ? "#" + active.lastWeekPosition : "—"}</span>
                 </div>
               </div>
             </div>
