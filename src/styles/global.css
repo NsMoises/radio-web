@@ -1922,6 +1922,43 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 }
 .panel__tab--active .panel__tab-count { background: var(--accent); color: #111; }
 .panel__tabs--sub { margin: 16px 0 0; border-radius: var(--radius); background: var(--bg-card); }
+
+/* ===== Programación (Panel admin) ===== */
+.prog-list { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
+.prog-card {
+  display: flex; flex-direction: column; gap: 10px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 18px;
+}
+.prog-card__top { display: flex; gap: 10px; align-items: flex-start; width: 100%; }
+.prog-card__top .panel-input--lg { flex: 1; min-width: 0; }
+.prog-card textarea {
+  width: 100%; padding: 8px 12px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); font-family: inherit; font-size: 0.88rem;
+  outline: none; resize: vertical;
+}
+.prog-card textarea:focus { border-color: var(--accent-dim); }
+.prog-card input[type="time"] {
+  padding: 5px 8px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-family: inherit; font-size: 0.85rem;
+}
+.prog-card input[type="time"]:focus { border-color: var(--accent-dim); }
+.prog-card .panel-field-label ~ .panel-field-label { margin-left: 4px; }
+.prog-host { flex: 1; min-width: 150px; }
+.prog-card .prog-host {
+  padding: 8px 12px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-family: inherit;
+  font-size: 0.9rem; outline: none;
+}
+.prog-card .prog-host:focus { border-color: var(--accent-dim); }
+.prog-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 44px 16px; margin-top: 22px;
+  background: var(--bg-card); border: 1px dashed var(--border);
+  border-radius: var(--radius); color: var(--text-mute); text-align: center;
+}
+.prog-empty p { margin: 0; font-size: 0.92rem; }
 /* Remove button in panel rows */
 .panel-row__remove {
   background: transparent; border: none; color: var(--down); cursor: pointer;
