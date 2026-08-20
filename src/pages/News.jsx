@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNews } from "../hooks/useNews.js";
+import { extractYouTubeId, youtubeEmbed } from "../utils/youtube-utils.js";
 
 export default function News() {
   const { data } = useNews();
@@ -41,7 +42,22 @@ export default function News() {
               >
                 {open === n.id ? "Cerrar" : "Leer más"}
               </button>
-              {open === n.id && <p className="news-item__body-text">{n.body}</p>}
+              {open === n.id && (
+                <>
+                  {extractYouTubeId(n.video) && (
+                    <div className="news-item__video">
+                      <iframe
+                        src={youtubeEmbed(extractYouTubeId(n.video), false)}
+                        title={n.title}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                  )}
+                  <p className="news-item__body-text">{n.body}</p>
+                </>
+              )}
             </div>
           </article>
         ))}

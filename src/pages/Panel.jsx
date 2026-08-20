@@ -400,15 +400,52 @@ function EditorNoticias() {
   const [articles, setArticles] = useState([]);
   const [status, setStatus] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [fetchingIds, setFetchingIds] = useState(new Set());
+  const fetchedRef = useRef(new Set());
 
   useEffect(() => { if (data) setArticles(data.articles.map((a, i) => ({ ...a, id: i + 1 }))); }, [data]);
 
   const update = (id, field, value) => setArticles((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
 
+  // Auto-fetch del título desde YouTube cuando se pega el link del vídeo
+  useEffect(() => {
+    const toFetch = [];
+    for (const a of articles) {
+      const vid = extractYouTubeId(a.video);
+      if (!vid || vid.length < 11) continue;
+      if (fetchedRef.current.has(vid)) continue;
+      if (a.title && a.title.trim()) continue;
+      toFetch.push({ id: a.id, vid });
+    }
+    if (toFetch.length === 0) return;
+    toFetch.forEach(({ id, vid }) => {
+      fetchedRef.current.add(vid);
+      setFetchingIds((prev) => new Set([...prev, id]));
+      fetchYoutubeInfo(vid).then((info) => {
+        setFetchingIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+        if (!info) { fetchedRef.current.delete(vid); return; }
+        const title = (info.title || info.artist || "").trim();
+        if (!title) { fetchedRef.current.delete(vid); return; }
+        setArticles((rs) => rs.map((row) => (row.id === id && !row.title ? { ...row, title } : row)));
+      });
+    });
+  }, [articles]);
+
+  const fetchNow = async (a) => {
+    const vid = extractYouTubeId(a.video);
+    if (!vid || vid.length < 11) return;
+    setFetchingIds((prev) => new Set([...prev, a.id]));
+    const info = await fetchYoutubeInfo(vid);
+    setFetchingIds((prev) => { const next = new Set(prev); next.delete(a.id); return next; });
+    if (!info) { alert("No se pudo obtener el título desde YouTube."); return; }
+    const title = (info.title || info.artist || "").trim();
+    setArticles((rs) => rs.map((row) => (row.id === a.id && title ? { ...row, title } : row)));
+  };
+
   const addEmpty = () => {
     setArticles((rs) => {
       const maxId = rs.reduce((m, v) => Math.max(m, v.id || 0), 0);
-      return [...rs, { id: maxId + 1, title: "", date: new Date().toISOString().slice(0, 10), category: "General", excerpt: "", body: "", cover: "" }];
+      return [...rs, { id: maxId + 1, title: "", date: new Date().toISOString().slice(0, 10), category: "General", excerpt: "", body: "", cover: "", video: "" }];
     });
   };
 
@@ -455,6 +492,11 @@ function EditorNoticias() {
                 <span className="panel-field-label">Portada URL</span>
                 <input type="url" value={a.cover || ""} onChange={(e) => update(a.id, "cover", e.target.value)} placeholder="https://..." />
                 <UploadBtn onUpload={(url) => update(a.id, "cover", url)} label="Subir foto" />
+              </div>
+              <div className="panel-row__row panel-row__row--tags">
+                <span className="panel-field-label">Vídeo YouTube</span>
+                <input type="url" value={a.video || ""} onChange={(e) => update(a.id, "video", e.target.value)} placeholder="https://youtube.com/watch?v=..." />
+                <button className="btn btn--ghost btn--small" onClick={() => fetchNow(a)} disabled={fetchingIds.has(a.id)} title="Completar título desde el vídeo">{fetchingIds.has(a.id) ? "⌛" : "🎬 Auto título"}</button>
               </div>
               <textarea rows={2} value={a.excerpt || ""} onChange={(e) => update(a.id, "excerpt", e.target.value)} placeholder="Extracto breve — se muestra en la tarjeta de inicio" />
               <textarea rows={4} value={a.body || ""} onChange={(e) => update(a.id, "body", e.target.value)} placeholder="Cuerpo completo de la noticia — se despliega al hacer clic en 'Leer más'" className="panel-textarea--body" />
