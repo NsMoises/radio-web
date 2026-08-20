@@ -4,7 +4,6 @@ import { extractYouTubeId, youtubeThumb, youtubeEmbed } from "../utils/youtube-u
 
 export default function News() {
   const { data } = useNews();
-  const [open, setOpen] = useState(null);
   const [playing, setPlaying] = useState(null);
 
   const sorted = [...(data?.articles || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -29,9 +28,9 @@ export default function News() {
           const isPlaying = playing === n.id;
           return (
             <article className="news-item" key={n.id}>
-              {vid || n.cover ? (
+              {vid ? (
                 <div className="news-item__media">
-                  {isPlaying && vid ? (
+                  {isPlaying ? (
                     <div className="news-item__video">
                       <iframe
                         src={youtubeEmbed(vid, true)}
@@ -43,18 +42,19 @@ export default function News() {
                       <button className="news-item__video-close" onClick={() => setPlaying(null)} title="Cerrar vídeo">✕</button>
                     </div>
                   ) : (
-                    <button
-                      className="news-item__thumb"
-                      onClick={vid ? () => setPlaying(n.id) : undefined}
-                      disabled={!vid}
-                      title={vid ? "Reproducir vídeo" : n.title}
-                    >
-                      <img src={youtubeThumb(vid) || n.cover} alt={n.title} loading="lazy" />
-                      {vid && <span className="news-item__play">▶</span>}
+                    <button className="news-item__thumb" onClick={() => setPlaying(n.id)} title="Reproducir vídeo">
+                      <img src={youtubeThumb(vid)} alt={n.title} loading="lazy" />
+                      <span className="news-item__play">▶</span>
                     </button>
                   )}
                 </div>
-              ) : null}
+              ) : (
+                n.cover && (
+                  <div className="news-item__media">
+                    <img src={n.cover} alt={n.title} loading="lazy" className="news-item__thumb news-item__thumb--static" />
+                  </div>
+                )
+              )}
               <div className="news-item__body">
                 <div className="news-item__tags">
                   <time className="news-item__date">
@@ -66,15 +66,6 @@ export default function News() {
                 </div>
                 <h2 className="news-item__title">{n.title}</h2>
                 {n.excerpt && <p className="news-item__excerpt">{n.excerpt}</p>}
-                {n.body && (
-                  <button
-                    className="btn btn--ghost btn--small"
-                    onClick={() => setOpen(open === n.id ? null : n.id)}
-                  >
-                    {open === n.id ? "Cerrar" : "Leer más"}
-                  </button>
-                )}
-                {open === n.id && n.body && <p className="news-item__body-text">{n.body}</p>}
               </div>
             </article>
           );

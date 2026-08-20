@@ -10,7 +10,7 @@ import { useCandidatos } from "../hooks/useCandidatos.js";
 import { useVideos } from "../hooks/useVideos.js";
 import { useVotoCandidato } from "../hooks/useVotoCandidato.js";
 import { useVotoVideo } from "../hooks/useVotoVideo.js";
-import { extractYouTubeId, youtubeEmbed } from "../utils/youtube-utils.js";
+import { extractYouTubeId, youtubeEmbed, youtubeThumb } from "../utils/youtube-utils.js";
 import Banner from "../components/Banner.jsx";
 import LiveCam from "../components/LiveCam.jsx";
 import MovieCard from "../components/MovieCard.jsx";
@@ -137,7 +137,7 @@ export default function Home() {
         <div className="news-grid">
           {latestNews.map((n) => (
             <article className="news-card" key={n.id}>
-              <img src={n.cover} alt={n.title} loading="lazy" />
+              <img src={youtubeThumb(extractYouTubeId(n.video)) || n.cover} alt={n.title} loading="lazy" />
               <div className="news-card__body">
                 <div className="news-card__tags">
                   <time className="news-card__date">

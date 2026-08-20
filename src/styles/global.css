@@ -1557,6 +1557,7 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
 }
 .news-item__thumb img { width: 100%; height: 100%; }
 .news-item__thumb:disabled { cursor: default; }
+.news-item__thumb--static { cursor: default; }
 .news-item__play {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: 46px; height: 46px; border-radius: 50%;
