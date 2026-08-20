@@ -64,7 +64,7 @@ export function weekRangeLabel(iso, startDay = 1) {
 }
 
 // Rango de la semana de estrenos: de viernes a viernes (viernes actual → próximo viernes).
-// Ejemplo: "Del viernes 15 al viernes 22 de Agosto".
+// Ejemplo: "Del viernes 14 al viernes 21 de agosto".
 export function fridayToFridayLabel(date = new Date()) {
   if (!date) return "";
   const d = new Date(date);
@@ -76,9 +76,8 @@ export function fridayToFridayLabel(date = new Date()) {
   const end = new Date(start);
   end.setDate(start.getDate() + 7);
 
-  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const fmt = (x) =>
-    cap(x.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" }));
+    `${x.toLocaleDateString("es-ES", { weekday: "long" })} ${x.getDate()} de ${x.toLocaleDateString("es-ES", { month: "long" })}`;
 
   return `Del ${fmt(start)} al ${fmt(end)}`;
 }

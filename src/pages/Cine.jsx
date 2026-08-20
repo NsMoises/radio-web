@@ -9,7 +9,7 @@ export default function Cine() {
   const weekPeriod = fridayToFridayLabel();
   const seasonLabel = data?.seasonLabel || "";
   const updated = data?.lastUpdatedAt
-    ? new Date(data.lastUpdatedAt).toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })
+    ? new Date(data.lastUpdatedAt).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })
     : "";
 
   return (
@@ -19,8 +19,8 @@ export default function Cine() {
         <h1 className="page__title page__title--xl">Estrenos de cine</h1>
         <div className="page__weeklabel">{weekPeriod}{seasonLabel && <> · {seasonLabel}</>}</div>
         <p className="page__sub">
-          Estrenos de la semana (viernes a viernes). Pulsa una tarjeta para ver el tráiler.
-          {updated && <> · Actualizado el <strong>{updated}</strong></>}
+          Pulsa una tarjeta para ver el tráiler.
+          {updated && <> · Actualizado {updated}</>}
         </p>
       </header>
 
