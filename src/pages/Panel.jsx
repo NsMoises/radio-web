@@ -481,25 +481,25 @@ function EditorNoticias() {
             <ImgPreview src={youtubeThumb(extractYouTubeId(a.video)) || a.cover} width={80} height={54} />
             <div className="panel-row__fields">
               <div className="panel-row__row panel-row__row--top">
-                <input type="text" value={a.title || ""} onChange={(e) => update(a.id, "title", e.target.value)} placeholder="Título de la noticia" className="panel-input--lg" />
+                <input type="text" value={a.title || ""} onChange={(e) => update(a.id, "title", e.target.value)} placeholder="Título (se autocompleta desde el vídeo)" className="panel-input--lg" />
                 <button className="panel-row__remove" onClick={() => removeArticle(a.id)} title="Eliminar noticia">✕</button>
-              </div>
-              <div className="panel-row__row panel-row__row--tags">
-                <span className="panel-field-label">Fecha</span>
-                <input type="date" value={(a.date || "").slice(0, 10)} onChange={(e) => update(a.id, "date", e.target.value)} />
-                <span className="panel-field-label">Categoría</span>
-                <input type="text" value={a.category || ""} onChange={(e) => update(a.id, "category", e.target.value)} placeholder="Ej: Música, Entrevista..." />
-                <span className="panel-field-label">Portada URL</span>
-                <input type="url" value={a.cover || ""} onChange={(e) => update(a.id, "cover", e.target.value)} placeholder="https://..." />
-                <UploadBtn onUpload={(url) => update(a.id, "cover", url)} label="Subir foto" />
               </div>
               <div className="panel-row__row panel-row__row--tags">
                 <span className="panel-field-label">Vídeo YouTube</span>
                 <input type="url" value={a.video || ""} onChange={(e) => update(a.id, "video", e.target.value)} placeholder="https://youtube.com/watch?v=..." />
                 <button className="btn btn--ghost btn--small" onClick={() => fetchNow(a)} disabled={fetchingIds.has(a.id)} title="Completar título desde el vídeo">{fetchingIds.has(a.id) ? "⌛" : "🎬 Auto título"}</button>
               </div>
-              <textarea rows={2} value={a.excerpt || ""} onChange={(e) => update(a.id, "excerpt", e.target.value)} placeholder="Extracto breve — se muestra en la tarjeta de inicio" />
-              <textarea rows={4} value={a.body || ""} onChange={(e) => update(a.id, "body", e.target.value)} placeholder="Cuerpo completo de la noticia — se despliega al hacer clic en 'Leer más'" className="panel-textarea--body" />
+              <div className="panel-row__row panel-row__row--tags">
+                <span className="panel-field-label">Fecha</span>
+                <input type="date" value={(a.date || "").slice(0, 10)} onChange={(e) => update(a.id, "date", e.target.value)} />
+                <span className="panel-field-label">Categoría</span>
+                <input type="text" value={a.category || ""} onChange={(e) => update(a.id, "category", e.target.value)} placeholder="Ej: Música, Entrevista..." />
+                <span className="panel-field-label">Portada (opcional)</span>
+                <input type="url" value={a.cover || ""} onChange={(e) => update(a.id, "cover", e.target.value)} placeholder="Si se deja vacía se usa la miniatura del vídeo" />
+                <UploadBtn onUpload={(url) => update(a.id, "cover", url)} label="Subir foto" />
+              </div>
+              <textarea rows={2} value={a.excerpt || ""} onChange={(e) => update(a.id, "excerpt", e.target.value)} placeholder="Resumen de la noticia — se muestra en la tarjeta" />
+              <textarea rows={4} value={a.body || ""} onChange={(e) => update(a.id, "body", e.target.value)} placeholder="Texto completo (opcional) — se despliega al hacer clic en 'Leer más'" className="panel-textarea--body" />
             </div>
           </div>
         ))}
