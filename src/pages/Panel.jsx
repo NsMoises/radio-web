@@ -11,7 +11,7 @@ import { useCandidatos } from "../hooks/useCandidatos.js";
 import { usePrograms } from "../hooks/usePrograms.js";
 import { useConfig } from "../hooks/useConfig.js";
 import { downloadJson, uploadImage } from "../utils/panel-utils.js";
-import { weekRangeLabel } from "../utils/date-utils.js";
+import { weekRangeLabel, fridayToFridayLabel } from "../utils/date-utils.js";
 import ImgPreview from "../components/ImgPreview.jsx";
 
 function UploadBtn({ onUpload, label = "Subir imagen" }) {
@@ -475,12 +475,18 @@ function EditorNoticias() {
 function EditorEstrenos() {
   const { data, loading, error, save } = usePremieres();
   const [premieres, setPremieres] = useState([]);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState("");
   const [status, setStatus] = useState(null);
   const [saving, setSaving] = useState(false);
   const [fetchingIds, setFetchingIds] = useState(new Set());
   const fetchedRef = useRef(new Set());
 
-  useEffect(() => { if (data) setPremieres(data.premieres.map((p, i) => ({ ...p, id: i + 1 }))); }, [data]);
+  useEffect(() => {
+    if (data) {
+      setPremieres(data.premieres.map((p, i) => ({ ...p, id: i + 1 })));
+      if (data.lastUpdatedAt) setLastUpdatedAt(data.lastUpdatedAt);
+    }
+  }, [data]);
 
   const update = (id, field, value) => setPremieres((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
 
@@ -530,9 +536,10 @@ function EditorEstrenos() {
 
   const guardar = async () => {
     if (saving) return; setSaving(true);
-    const res = await save({ premieres });
+    const today = new Date().toISOString().slice(0, 10);
+    const res = await save({ premieres, lastUpdatedAt: today });
     setSaving(false);
-    if (res.ok) setStatus({ ok: true, msg: "✓ Estrenos guardados." });
+    if (res.ok) { setLastUpdatedAt(today); setStatus({ ok: true, msg: "✓ Estrenos guardados y semana marcada como actualizada." }); }
     else if (res.offline) setStatus({ ok: false, msg: "⚠ Sin backend: guardado solo local." });
     else setStatus({ ok: false, msg: "✕ Error: " + (res.error || "") });
   };
@@ -551,6 +558,10 @@ function EditorEstrenos() {
         </div>
       </header>
       {status && <div className={"panel__status" + (status.ok ? " panel__status--ok" : " panel__status--warn")}>{status.msg}</div>}
+      <div className="panel__hint">
+        <span className="panel__hint-icon">📅</span>
+        <span><strong>Semana de estrenos (viernes a viernes): {fridayToFridayLabel()}.</strong> Recuerda actualizar los estrenos cada semana con las novedades del cine y pulsa <strong>Guardar cambios</strong>.{lastUpdatedAt && <> Actualizado el <strong>{new Date(lastUpdatedAt).toLocaleDateString("es-ES")}</strong>.</>}</span>
+      </div>
       <div className="panel__list">
         {premieres.map((p, i) => {
           const ytId = extractYouTubeId(p.url);

@@ -1,10 +1,12 @@
 import { usePremieres } from "../hooks/usePremieres.js";
 import MovieCard from "../components/MovieCard.jsx";
+import { fridayToFridayLabel } from "../utils/date-utils.js";
 
 export default function Cine() {
   const { data, loading } = usePremieres();
 
   const premieres = data?.premieres || [];
+  const weekPeriod = fridayToFridayLabel();
   const seasonLabel = data?.seasonLabel || "";
   const updated = data?.lastUpdatedAt
     ? new Date(data.lastUpdatedAt).toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })
@@ -15,9 +17,9 @@ export default function Cine() {
       <header className="page__head page__head--center">
         <p className="page__kicker">CINE</p>
         <h1 className="page__title page__title--xl">Estrenos de cine</h1>
-        <div className="page__weeklabel">{seasonLabel}</div>
+        <div className="page__weeklabel">{weekPeriod}{seasonLabel && <> · {seasonLabel}</>}</div>
         <p className="page__sub">
-          Los estrenos del momento. Pulsa una tarjeta para ver el tráiler.
+          Estrenos de la semana (viernes a viernes). Pulsa una tarjeta para ver el tráiler.
           {updated && <> · Actualizado el <strong>{updated}</strong></>}
         </p>
       </header>

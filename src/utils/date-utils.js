@@ -62,3 +62,23 @@ export function weekRangeLabel(iso, startDay = 1) {
   // Si cruzan meses: "31 de Julio al 6 de Agosto"
   return `Semana del ${fmtDayMonth(start)} al ${fmtDayMonth(end)}`;
 }
+
+// Rango de la semana de estrenos: de viernes a viernes (viernes actual → próximo viernes).
+// Ejemplo: "Del viernes 15 al viernes 22 de Agosto".
+export function fridayToFridayLabel(date = new Date()) {
+  if (!date) return "";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "";
+  // Ancla al viernes más reciente (incluye hoy si es viernes).
+  const daysSinceFriday = (d.getDay() - 5 + 7) % 7;
+  const start = new Date(d);
+  start.setDate(d.getDate() - daysSinceFriday);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const fmt = (x) =>
+    cap(x.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" }));
+
+  return `Del ${fmt(start)} al ${fmt(end)}`;
+}
