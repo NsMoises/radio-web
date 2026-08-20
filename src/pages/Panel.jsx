@@ -478,7 +478,7 @@ function EditorNoticias() {
         {articles.map((a, i) => (
           <div className="panel-row" key={a.id || i}>
             <div className="panel-row__order">#{i + 1}</div>
-            <ImgPreview src={a.cover} width={80} height={54} />
+            <ImgPreview src={youtubeThumb(extractYouTubeId(a.video)) || a.cover} width={80} height={54} />
             <div className="panel-row__fields">
               <div className="panel-row__row panel-row__row--top">
                 <input type="text" value={a.title || ""} onChange={(e) => update(a.id, "title", e.target.value)} placeholder="Título de la noticia" className="panel-input--lg" />
