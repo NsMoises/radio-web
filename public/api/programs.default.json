@@ -1,0 +1,18 @@
+{
+  "programs": [
+    { "id": 1, "day": "Lunes",     "start": "06:00", "end": "09:00", "title": "Despierta con Música",  "host": "Elena Ruiz",   "desc": "Magacín matinal con noticias y temas clásicos para arrancar el día." },
+    { "id": 2, "day": "Lunes",     "start": "16:00", "end": "19:00", "title": "Tarde de Discos",       "host": "Marco Polo",   "desc": "Selección de vinilos y novedades de la escena indie." },
+    { "id": 3, "day": "Martes",    "start": "06:00", "end": "09:00", "title": "Despierta con Música",  "host": "Elena Ruiz",   "desc": "Magacín matinal con noticias y temas clásicos." },
+    { "id": 4, "day": "Martes",    "start": "20:00", "end": "22:00", "title": "El Top 20 Semanal",     "host": "Dirección",    "desc": "El recuento semanal de las 20 canciones más sonadas." },
+    { "id": 5, "day": "Miércoles", "start": "06:00", "end": "09:00", "title": "Despierta con Música",  "host": "Elena Ruiz",   "desc": "Magacín matinal de los miércoles." },
+    { "id": 6, "day": "Miércoles", "start": "22:00", "end": "00:00", "title": "Noche Acústica",        "host": "Lola Berm",    "desc": "Concierto acústico y temas desenchufados cada semana." },
+    { "id": 7, "day": "Jueves",    "start": "06:00", "end": "09:00", "title": "Despierta con Música",  "host": "Elena Ruiz",   "desc": "Magacín matinal." },
+    { "id": 8, "day": "Jueves",    "start": "16:00", "end": "19:00", "title": "Tarde de Discos",       "host": "Marco Polo",   "desc": "Selección de clásicos y novedades." },
+    { "id": 9, "day": "Viernes",   "start": "06:00", "end": "09:00", "title": "Despierta con Música",  "host": "Elena Ruiz",   "desc": "Última jornada laboral, repaso de lo mejor de la semana." },
+    { "id": 10,"day": "Viernes",   "start": "21:00", "end": "00:00", "title": "Vivapalooza Viernes",   "host": "DJ Sera",      "desc": "Fiesta de viernes con los temas más bailables del ranking." },
+    { "id": 11,"day": "Sábado",    "start": "10:00", "end": "13:00", "title": "Música y Café",          "host": "Tania Sol",    "desc": "Programa tranquilo del fin de semana: jazz, bossa y charla." },
+    { "id": 12,"day": "Sábado",    "start": "20:00", "end": "23:00", "title": "Cita con el Pasodoble",  "host": "Andrés Gil",   "desc": "Especial música española y tradicional." },
+    { "id": 13,"day": "Domingo",   "start": "12:00", "end": "14:00", "title": "Brunch Musical",        "host": "Tania Sol",    "desc": "Música suave para el mediodía del domingo." },
+    { "id": 14,"day": "Domingo",   "start": "18:00", "end": "20:00", "title": "Top 15 en Vídeo",       "host": "Dirección",    "desc": "Visual del Top 15 con miniaturas de YouTube." }
+  ]
+}

@@ -13,7 +13,14 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") { http_response_code(204); exit; }
 if (!is_dir(DATA_DIR)) { @mkdir(DATA_DIR, 0775, true); }
 
 if ($_SERVER["REQUEST_METHOD"] === "GET") {
-  if (!file_exists(DATA_FILE)) { http_response_code(404); echo json_encode(["ok" => false, "error" => "programs.json no existe"]); exit; }
+  if (!file_exists(DATA_FILE)) {
+    $default = __DIR__ . "/programs.default.json";
+    if (file_exists($default)) {
+      if (!@copy($default, DATA_FILE)) { readfile($default); exit; }
+    } else {
+      http_response_code(404); echo json_encode(["ok" => false, "error" => "programs.json no existe"]); exit;
+    }
+  }
   readfile(DATA_FILE); exit;
 }
 
