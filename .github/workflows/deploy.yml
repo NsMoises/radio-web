@@ -19,7 +19,16 @@ jobs:
       - run: npm run build
 
       - name: Install lftp
-        run: sudo apt-get update && sudo apt-get install -y lftp
+        shell: bash
+        run: |
+          for i in 1 2 3 4; do
+            if sudo timeout 90 apt-get update; then break; else
+              echo "apt-get update intento $i fallo/intento colgado -> reintentando"
+              sudo pkill -9 apt-get 2>/dev/null || true
+              sleep 5
+            fi
+          done
+          sudo apt-get install -y lftp
 
       - name: Prepare panel secret
         run: |
