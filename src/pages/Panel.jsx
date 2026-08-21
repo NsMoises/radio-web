@@ -197,15 +197,7 @@ function EditorTop20() {
               <div className="panel-row__pos">
                 <div className="panel-row__numwrap">
                   <span className="panel-row__hash">#</span>
-                  <input
-                    type="number" min="1" max={rows.length}
-                    className="panel-row__num-input"
-                    defaultValue={i + 1}
-                    key={`${r.id}-${i}`}
-                    title="Escribe la posición y pulsa Enter"
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); const v = parseInt(e.target.value, 10); if (v >= 1 && v <= rows.length) { moveTo(r.id, v); } e.target.blur(); } }}
-                    onBlur={(e) => { const v = parseInt(e.target.value, 10); if (v >= 1 && v <= rows.length) moveTo(r.id, v); }}
-                  />
+                  <PositionInput value={i + 1} max={rows.length} onCommit={(v) => moveTo(r.id, v)} />
                 </div>
                 <div className="panel-row__arrows">
                   <button onClick={() => move(i, -1)} disabled={i === 0} title="Subir">▲</button>
@@ -602,7 +594,30 @@ function EditorEstrenos() {
 
   const guardar = async () => {
     if (saving) return; setSaving(true);
-    const today = new Date().toISOString().slice(0, 10);
+function PositionInput({ value, max, onCommit }) {
+  const [text, setText] = useState(String(value));
+  const focusedRef = useRef(false);
+  useEffect(() => { if (!focusedRef.current) setText(String(value)); }, [value]);
+  const commit = () => {
+    const v = parseInt(text, 10);
+    if (v >= 1 && v <= max) onCommit(v);
+    else setText(String(value));
+  };
+  return (
+    <input
+      type="number" min="1" max={max}
+      className="panel-row__num-input"
+      value={text}
+      onFocus={() => { focusedRef.current = true; }}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={() => { focusedRef.current = false; commit(); }}
+      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } }}
+      title="Escribe la posición y pulsa Enter"
+    />
+  );
+}
+
+const today = new Date().toISOString().slice(0, 10);
     const res = await save({ premieres, lastUpdatedAt: today });
     setSaving(false);
     if (res.ok) { setLastUpdatedAt(today); setStatus({ ok: true, msg: "✓ Estrenos guardados y semana marcada como actualizada." }); }
