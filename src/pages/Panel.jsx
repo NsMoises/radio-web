@@ -129,6 +129,22 @@ function EditorTop20() {
     return next;
   });
 
+  // Mueve una canción a la posición digitada (1-based).
+  const moveTo = (id, target) => {
+    setRows((rs) => {
+      const from = rs.findIndex((r) => r.id === id);
+      const to = Math.min(Math.max(target, 1), rs.length);
+      if (from < 0 || to === from + 1) return rs;
+      const next = [...rs];
+      const [item] = next.splice(from, 1);
+      next.splice(to - 1, 0, item);
+      next.forEach((r, i) => { r.position = i + 1; });
+      return next;
+    });
+  };
+
+  const addSong = () => setRows((rs) => [...rs, { id: "new-" + Date.now(), videoId: "", url: "", title: "", artist: "", enteredAt: today, lastWeekPosition: null, peakPosition: 0, isNew: true, badge: "", position: rs.length + 1 }]);
+
   const rotateWeek = () => {
     if (!confirm("¿Marcar nueva semana? Las posiciones actuales se guardarán como \"semana anterior\" y la fecha/etiqueta se actualizarán a la semana actual. Debes pulsar Guardar para que se publique.")) return;
     setRows((rs) => rs.map((r) => ({ ...r, lastWeekPosition: r.position, isNew: false })));
@@ -164,12 +180,13 @@ function EditorTop20() {
           {error === "offline" && <p className="panel__offline">⚠ Sin backend: cambios solo locales</p>}
         </div>
         <div className="panel__actions">
+          <button className="btn btn--ghost btn--small" onClick={addSong} title="Añadir canción">➕ Añadir</button>
           <button className="btn btn--ghost btn--small" onClick={rotateWeek} title="Marcar nueva semana">↻ Nueva semana</button>
           <button className="btn btn--ghost btn--small" onClick={exportBackup} title="Descargar backup">⬇ Backup</button>
           <button className="btn btn--primary" onClick={guardar} disabled={saving}>{saving ? "Guardando…" : "💾 Guardar cambios"}</button>
         </div>
       </header>
-      <div className="panel__hint"><strong>Cómo usar:</strong> pega cualquier link de YouTube — título, artista y miniatura se rellenan solos. Usa ▲▼ para reordenar.</div>
+      <div className="panel__hint"><strong>Cómo usar:</strong> pega cualquier link de YouTube — título, artista y miniatura se rellenan solos. Usa ▲▼ o escribe el número y pulsa Enter para reordenar.</div>
       {status && <div className={"panel__status" + (status.ok ? " panel__status--ok" : " panel__status--warn")}>{status.msg}</div>}
       <div className="panel__list">
         {rows.map((r, i) => {
@@ -178,7 +195,18 @@ function EditorTop20() {
           return (
             <div className="panel-row" key={r.id || i}>
               <div className="panel-row__pos">
-                <span className="panel-row__num">#{i + 1}</span>
+                <div className="panel-row__numwrap">
+                  <span className="panel-row__hash">#</span>
+                  <input
+                    type="number" min="1" max={rows.length}
+                    className="panel-row__num-input"
+                    defaultValue={i + 1}
+                    key={`${r.id}-${i}`}
+                    title="Escribe la posición y pulsa Enter"
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); const v = parseInt(e.target.value, 10); if (v >= 1 && v <= rows.length) { moveTo(r.id, v); } e.target.blur(); } }}
+                    onBlur={(e) => { const v = parseInt(e.target.value, 10); if (v >= 1 && v <= rows.length) moveTo(r.id, v); }}
+                  />
+                </div>
                 <div className="panel-row__arrows">
                   <button onClick={() => move(i, -1)} disabled={i === 0} title="Subir">▲</button>
                   <button onClick={() => move(i, 1)} disabled={i === rows.length - 1} title="Bajar">▼</button>

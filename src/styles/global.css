@@ -673,9 +673,17 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
   border-radius: var(--radius); padding: 14px;
 }
 .panel-row__pos { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.panel-row__num {
+.panel-row__numwrap { display: flex; align-items: baseline; gap: 2px; }
+.panel-row__hash {
   font-family: var(--font-serif); font-size: 1.4rem; font-weight: 700; color: var(--accent);
 }
+.panel-row__num-input {
+  width: 44px; text-align: center;
+  font-family: var(--font-serif); font-size: 1.4rem; font-weight: 700; color: var(--accent);
+  background: var(--bg-elev); border: 1px solid var(--border); border-radius: 4px;
+  padding: 2px 4px;
+}
+.panel-row__num-input:focus { outline: none; border-color: var(--accent); }
 .panel-row__arrows { display: flex; flex-direction: column; gap: 4px; }
 .panel-row__arrows button {
   width: 28px; height: 24px; border: 1px solid var(--border);
