@@ -88,7 +88,7 @@ function EditorTop20() {
 
   useEffect(() => {
     if (!data) return;
-    setRows(data.songs.map((s, i) => ({ ...s, id: extractYouTubeId(s.url) || s.videoId || s.id || i + 1, videoId: extractYouTubeId(s.url) || s.videoId || "" })));
+    setRows(data.songs.map((s, i) => ({ ...s, _key: "s" + i + "-" + Math.random().toString(36).slice(2, 8), id: extractYouTubeId(s.url) || s.videoId || s.id || i + 1, videoId: extractYouTubeId(s.url) || s.videoId || "" })));
     setHeader({ lastUpdatedAt: data.lastUpdatedAt || today, weekLabel: data.weekLabel || "" });
   }, [data]);
 
@@ -107,12 +107,12 @@ function EditorTop20() {
     if (toFetch.length === 0) return;
     toFetch.forEach((r) => {
       fetchedRef.current.add(r.videoId);
-      setFetchingIds((prev) => new Set([...prev, r.id]));
+      setFetchingIds((prev) => new Set([...prev, r._key]));
       fetchYoutubeInfo(r.videoId).then((info) => {
-        setFetchingIds((prev) => { const next = new Set(prev); next.delete(r.id); return next; });
+        setFetchingIds((prev) => { const next = new Set(prev); next.delete(r._key); return next; });
         if (!info) return;
         setRows((rs) => rs.map((row) => {
-          if (row.id !== r.id) return row;
+          if (row._key !== r._key) return row;
           return {
             ...row,
             title: info.title ? info.title.toUpperCase() : row.title || "",
@@ -126,12 +126,12 @@ function EditorTop20() {
   const fetchNow = async (r) => {
     const vid = extractYouTubeId(r.url) || r.videoId;
     if (!vid || vid.length < 11) return;
-    setFetchingIds((prev) => new Set([...prev, r.id]));
+    setFetchingIds((prev) => new Set([...prev, r._key]));
     const info = await fetchYoutubeInfo(vid);
-    setFetchingIds((prev) => { const next = new Set(prev); next.delete(r.id); return next; });
+    setFetchingIds((prev) => { const next = new Set(prev); next.delete(r._key); return next; });
     if (!info) { alert("No se pudo obtener info del video. Abrí F12 > Console para ver detalles."); return; }
     setRows((rs) => rs.map((row) => {
-      if (row.id !== r.id) return row;
+      if (row._key !== r._key) return row;
       return {
         ...row,
         title: info.title ? info.title.toUpperCase() : row.title,
@@ -141,7 +141,7 @@ function EditorTop20() {
     }));
   };
 
-  const update = (id, field, value) => setRows((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+  const update = (key, field, value) => setRows((rs) => rs.map((r) => (r._key === key ? { ...r, [field]: value } : r)));
 
   const move = (index, dir) => setRows((rs) => {
     const next = [...rs];
@@ -153,9 +153,9 @@ function EditorTop20() {
   });
 
   // Mueve una canción a la posición digitada (1-based).
-  const moveTo = (id, target) => {
+  const moveTo = (key, target) => {
     setRows((rs) => {
-      const from = rs.findIndex((r) => r.id === id);
+      const from = rs.findIndex((r) => r._key === key);
       const to = Math.min(Math.max(target, 1), rs.length);
       if (from < 0 || to === from + 1) return rs;
       const next = [...rs];
@@ -166,7 +166,7 @@ function EditorTop20() {
     });
   };
 
-  const addSong = () => setRows((rs) => [...rs, { id: "new-" + Date.now(), videoId: "", url: "", title: "", artist: "", enteredAt: today, lastWeekPosition: null, peakPosition: 0, isNew: true, badge: "", position: rs.length + 1 }]);
+  const addSong = () => setRows((rs) => [...rs, { _key: "s-new-" + Date.now(), id: "new-" + Date.now(), videoId: "", url: "", title: "", artist: "", enteredAt: today, lastWeekPosition: null, peakPosition: 0, isNew: true, badge: "", position: rs.length + 1 }]);
 
   const rotateWeek = () => {
     if (!confirm("¿Marcar nueva semana? Las posiciones actuales se guardarán como \"semana anterior\" y la fecha/etiqueta se actualizarán a la semana actual. Debes pulsar Guardar para que se publique.")) return;
@@ -181,7 +181,7 @@ function EditorTop20() {
     const payload = {
       lastUpdatedAt: header.lastUpdatedAt || today,
       weekLabel: header.weekLabel || defaultWeek,
-      songs: rows.map((r, i) => ({ ...r, position: i + 1, lastWeekPosition: parseInt(r.lastWeekPosition, 10) || 0, peakPosition: parseInt(r.peakPosition, 10) || i + 1 }))
+      songs: rows.map((r, i) => { const { _key, ...rest } = r; return { ...rest, position: i + 1, lastWeekPosition: parseInt(r.lastWeekPosition, 10) || 0, peakPosition: parseInt(r.peakPosition, 10) || i + 1 }; })
     };
     const res = await save(payload);
     setSaving(false);
@@ -190,7 +190,7 @@ function EditorTop20() {
     else setStatus({ ok: false, msg: "✕ Error: " + (res.error || "no se pudo guardar") });
   };
 
-  const exportBackup = () => downloadJson({ lastUpdatedAt: header.lastUpdatedAt, weekLabel: header.weekLabel, songs: rows }, "ranking-backup.json");
+  const exportBackup = () => downloadJson({ lastUpdatedAt: header.lastUpdatedAt, weekLabel: header.weekLabel, songs: rows.map(({ _key, ...rest }) => rest) }, "ranking-backup.json");
 
   if (loading) return <p style={{ color: "var(--text-dim)" }}>Cargando ranking…</p>;
 
@@ -216,11 +216,11 @@ function EditorTop20() {
           const vid = extractYouTubeId(r.url);
           const thumb = vid ? youtubeThumb(vid, "hqdefault") : null;
           return (
-            <div className="panel-row" key={r.id || i}>
+            <div className="panel-row" key={r._key || i}>
               <div className="panel-row__pos">
                 <div className="panel-row__numwrap">
                   <span className="panel-row__hash">#</span>
-                  <PositionInput value={i + 1} max={rows.length} onCommit={(v) => moveTo(r.id, v)} />
+                  <PositionInput value={i + 1} max={rows.length} onCommit={(v) => moveTo(r._key, v)} />
                 </div>
                 <div className="panel-row__arrows">
                   <button onClick={() => move(i, -1)} disabled={i === 0} title="Subir">▲</button>
@@ -231,19 +231,19 @@ function EditorTop20() {
                 {thumb ? <img src={thumb} alt="" onError={(e) => { e.target.style.display = "none"; }} /> : <span className="panel-row__nothumb">sin miniatura</span>}
               </div>
               <div className="panel-row__fields">
-                <input type="text" value={r.title || ""} onChange={(e) => update(r.id, "title", e.target.value)} placeholder="Título" />
-                <input type="text" value={r.artist || ""} onChange={(e) => update(r.id, "artist", e.target.value)} placeholder="Artista" />
+                <input type="text" value={r.title || ""} onChange={(e) => update(r._key, "title", e.target.value)} placeholder="Título" />
+                <input type="text" value={r.artist || ""} onChange={(e) => update(r._key, "artist", e.target.value)} placeholder="Artista" />
                 <div className="panel-row__row panel-row__row--wide">
-                  <input type="text" value={r.url || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw); update(r.id, "url", raw); if (extracted) { update(r.id, "videoId", extracted); update(r.id, "id", extracted); } }} placeholder="Pega el enlace de YouTube" className="panel-row__input--mono" />
-                  {fetchingIds.has(r.id) ? <span className="panel__fetch-spinner" title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(r)} title="Obtener título y artista desde YouTube" style={{ fontSize: "0.9rem", padding: "2px 8px" }}>🔄</button>}
+                  <input type="text" value={r.url || ""} onChange={(e) => { const raw = e.target.value; const extracted = extractYouTubeId(raw); update(r._key, "url", raw); if (extracted) { update(r._key, "videoId", extracted); update(r._key, "id", extracted); } }} placeholder="Pega el enlace de YouTube" className="panel-row__input--mono" />
+                  {fetchingIds.has(r._key) ? <span className="panel__fetch-spinner" title="Obteniendo título y artista…">⏳</span> : <button type="button" className="btn btn--ghost btn--small" onClick={() => fetchNow(r)} title="Obtener título y artista desde YouTube" style={{ fontSize: "0.9rem", padding: "2px 8px" }}>🔄</button>}
                 </div>
                 <div className="panel-row__row">
-                  <label>Entró: <input type="date" value={(r.enteredAt || today).slice(0, 10)} onChange={(e) => update(r.id, "enteredAt", e.target.value)} /></label>
-                  <label>Sem. ant.: <input type="number" min="0" max="20" value={r.lastWeekPosition ?? 0} onChange={(e) => update(r.id, "lastWeekPosition", e.target.value)} /></label>
-                  <label className="panel-row__check"><input type="checkbox" checked={!!r.isNew} onChange={(e) => { update(r.id, "isNew", e.target.checked); if (e.target.checked) { update(r.id, "lastWeekPosition", 0); update(r.id, "peakPosition", 0); } }} /> Nueva</label>
+                  <label>Entró: <input type="date" value={(r.enteredAt || today).slice(0, 10)} onChange={(e) => update(r._key, "enteredAt", e.target.value)} /></label>
+                  <label>Sem. ant.: <input type="number" min="0" max="20" value={r.lastWeekPosition ?? 0} onChange={(e) => update(r._key, "lastWeekPosition", e.target.value)} /></label>
+                  <label className="panel-row__check"><input type="checkbox" checked={!!r.isNew} onChange={(e) => { update(r._key, "isNew", e.target.checked); if (e.target.checked) { update(r._key, "lastWeekPosition", 0); update(r._key, "peakPosition", 0); } }} /> Nueva</label>
                 </div>
                 <div className="panel-row__row panel-row__row--wide">
-                  <label style={{ flex: 1 }}>Distintivo: <input type="text" value={r.badge || ""} onChange={(e) => update(r.id, "badge", e.target.value)} placeholder="Ej: NUMERO UNO POR 03 SEMANAS CONSECUTIVAS" className="panel-row__input--mono" /></label>
+                  <label style={{ flex: 1 }}>Distintivo: <input type="text" value={r.badge || ""} onChange={(e) => update(r._key, "badge", e.target.value)} placeholder="Ej: NUMERO UNO POR 03 SEMANAS CONSECUTIVAS" className="panel-row__input--mono" /></label>
                 </div>
               </div>
             </div>
