@@ -43,28 +43,40 @@ jobs:
 
       - name: Upload to cPanel via lftp
         run: |
-          lftp -c "
+          if ! lftp -c "
             set ssl:verify-certificate no
             set ftp:ssl-allow true
             set ftp:ssl-protect-data true
             open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
             mirror --reverse --delete --exclude api/data/ --exclude api/uploads/ --exclude radio.solperuradio.es/ --exclude cgi-bin/ --exclude \.user\.ini --exclude \.well-known/ --verbose dist/ /public_html
-          "
-          lftp -c "
+          " > /tmp/lftp1.log 2>&1; then
+            echo "::error::MIRROR1 fallo: $(tail -c 700 /tmp/lftp1.log | tr '\n' '|' | sed 's/${{ secrets.FTP_PASS }}/***/g')"
+            cat /tmp/lftp1.log
+            exit 1
+          fi
+          if ! lftp -c "
             set ssl:verify-certificate no
             set ftp:ssl-allow true
             set ftp:ssl-protect-data true
             open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
             mirror --reverse --no-perms --exclude data/ --exclude uploads/ --verbose public/api/ /public_html/api/
-          "
+          " > /tmp/lftp2.log 2>&1; then
+            echo "::error::MIRROR2 fallo: $(tail -c 700 /tmp/lftp2.log | tr '\n' '|' | sed 's/${{ secrets.FTP_PASS }}/***/g')"
+            cat /tmp/lftp2.log
+            exit 1
+          fi
           if [ -f deploy-secret/panel-secret.txt ]; then
-            lftp -c "
+            if ! lftp -c "
               set ssl:verify-certificate no
               set ftp:ssl-allow true
               set ftp:ssl-protect-data true
               open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
               put deploy-secret/panel-secret.txt -o /public_html/api/data/panel-secret.txt
               quit
-            "
+            " > /tmp/lftp3.log 2>&1; then
+              echo "::error::PUT SECRET fallo: $(tail -c 700 /tmp/lftp3.log | tr '\n' '|' | sed 's/${{ secrets.FTP_PASS }}/***/g')"
+              cat /tmp/lftp3.log
+              exit 1
+            fi
           fi
           echo "Deploy completo."
