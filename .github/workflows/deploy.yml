@@ -48,53 +48,23 @@ jobs:
             set ftp:ssl-allow true
             set ftp:ssl-protect-data true
             open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
-            echo ===PWD
-            pwd
-            echo ===CLS_PUBLIC_HTML
-            cls -l /public_html
-            echo ===TEST_PUT
-            put deploy-secret/panel-secret.txt -o /public_html/api/data/lftp-diag.txt
-            echo ===TEST_PUT_OK
-          " > /tmp/lftp_diag.log 2>&1 || true
-          echo "::warning::DIAG $(tail -c 900 /tmp/lftp_diag.log | tr '\n' '|' | sed 's/${{ secrets.FTP_PASS }}/***/g')"
-          if ! lftp -c "
-            set ssl:verify-certificate no
-            set ftp:ssl-allow true
-            set ftp:ssl-protect-data true
-            open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
             mirror --reverse --delete --exclude api/data/ --exclude api/uploads/ --exclude radio.solperuradio.es/ --exclude cgi-bin/ --exclude \.user\.ini --exclude \.well-known/ --verbose dist/ /public_html
-          " > /tmp/lftp1.log 2>&1; then
-            echo "::error::MIRROR1 fallo: $(tail -c 700 /tmp/lftp1.log | tr '\n' '|' | sed 's/${{ secrets.FTP_PASS }}/***/g')"
-            cat /tmp/lftp1.log
-            exit 1
-          else
-            echo "::warning::MIRROR1 ok: $(tail -c 500 /tmp/lftp1.log | tr '\n' '|' | sed 's/${{ secrets.FTP_PASS }}/***/g')"
-          fi
-          if ! lftp -c "
+          "
+          lftp -c "
             set ssl:verify-certificate no
             set ftp:ssl-allow true
             set ftp:ssl-protect-data true
             open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
             mirror --reverse --no-perms --exclude data/ --exclude uploads/ --verbose public/api/ /public_html/api/
-          " > /tmp/lftp2.log 2>&1; then
-            echo "::error::MIRROR2 fallo: $(tail -c 700 /tmp/lftp2.log | tr '\n' '|' | sed 's/${{ secrets.FTP_PASS }}/***/g')"
-            cat /tmp/lftp2.log
-            exit 1
-          else
-            echo "::warning::MIRROR2 ok: $(tail -c 500 /tmp/lftp2.log | tr '\n' '|' | sed 's/${{ secrets.FTP_PASS }}/***/g')"
-          fi
+          "
           if [ -f deploy-secret/panel-secret.txt ]; then
-            if ! lftp -c "
+            lftp -c "
               set ssl:verify-certificate no
               set ftp:ssl-allow true
               set ftp:ssl-protect-data true
               open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
               put deploy-secret/panel-secret.txt -o /public_html/api/data/panel-secret.txt
               quit
-            " > /tmp/lftp3.log 2>&1; then
-              echo "::error::PUT SECRET fallo: $(tail -c 700 /tmp/lftp3.log | tr '\n' '|' | sed 's/${{ secrets.FTP_PASS }}/***/g')"
-              cat /tmp/lftp3.log
-              exit 1
-            fi
+            "
           fi
           echo "Deploy completo."
