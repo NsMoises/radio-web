@@ -48,14 +48,14 @@ jobs:
             set ftp:ssl-allow true
             set ftp:ssl-protect-data true
             open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
-            mirror --reverse --delete --exclude api/data/ --exclude api/uploads/ --verbose dist/ ${{ secrets.FTP_PATH }}
+            mirror --reverse --delete --exclude api/data/ --exclude api/uploads/ --exclude radio.solperuradio.es/ --exclude cgi-bin/ --verbose dist/ /public_html
           "
           lftp -c "
             set ssl:verify-certificate no
             set ftp:ssl-allow true
             set ftp:ssl-protect-data true
             open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
-            mirror --reverse --no-perms --exclude data/ --exclude uploads/ --verbose public/api/ ${{ secrets.FTP_PATH }}/api/
+            mirror --reverse --no-perms --exclude data/ --exclude uploads/ --verbose public/api/ /public_html/api/
           "
           if [ -f deploy-secret/panel-secret.txt ]; then
             lftp -c "
@@ -63,7 +63,7 @@ jobs:
               set ftp:ssl-allow true
               set ftp:ssl-protect-data true
               open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASS }} ${{ secrets.FTP_HOST }}
-              put deploy-secret/panel-secret.txt -o ${{ secrets.FTP_PATH }}/api/data/panel-secret.txt
+              put deploy-secret/panel-secret.txt -o /public_html/api/data/panel-secret.txt
               quit
             "
           fi

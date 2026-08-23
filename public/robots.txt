@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /panel
 
-Sitemap: https://radio.solperuradio.es/sitemap.xml
+Sitemap: https://solperuradio.es/sitemap.xml

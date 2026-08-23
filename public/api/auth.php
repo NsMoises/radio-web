@@ -61,7 +61,7 @@ function allowedOrigin() {
     "http://127.0.0.1:5173"
   ];
   if (in_array($origin, $allowed, true)) return $origin;
-  return "https://radio.solperuradio.es";
+  return "https://solperuradio.es";
 }
 
 // Para endpoints que requieren credenciales, el CORS debe ser fijo (whitelist),
