@@ -17,6 +17,7 @@ import MovieCard from "../components/MovieCard.jsx";
 import TopPreviewCard from "../components/TopPreviewCard.jsx";
 import SongCard from "../components/SongCard.jsx";
 import CandidateCard from "../components/CandidateCard.jsx";
+import ChatBox from "../components/ChatBox.jsx";
 import Reveal from "../components/Reveal.jsx";
 import PedidoMusical from "../components/PedidoMusical.jsx";
 import { decorateSongs } from "../utils/ranking-utils.js";
@@ -181,15 +182,22 @@ export default function Home() {
       {/* CÁMARA EN VIVO */}
       <LiveCam />
 
-      {/* DJS / LOCUTORES */}
+      {/* DJS / LOCUTORES + CHAT EN VIVO */}
       <Reveal>
       <section className="block">
         <div className="block__head">
           <h2 className="block__title"><span className="block__icon">🎙️</span> Nuestros locutores</h2>
           <span className="block__link block__link--muted">El equipo que suena</span>
         </div>
-        <div className="dj-3d-wrap">
-          {djs.length > 0 && <DjCard3D dj={djs[0]} />}
+        <div className="dj-chat-layout">
+          <div className="dj-chat-layout__left">
+            <div className="dj-3d-wrap">
+              {djs.length > 0 && <DjCard3D dj={djs[0]} />}
+            </div>
+          </div>
+          <div className="dj-chat-layout__right">
+            <ChatBox />
+          </div>
         </div>
       </section>
       </Reveal>
