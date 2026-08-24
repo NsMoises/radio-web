@@ -77,29 +77,6 @@ const currentWeekLabel = () =>
 const currentWeekRangeLabel = (startDay) =>
   weekRangeLabel(new Date().toISOString().slice(0, 10), startDay);
 
-function PositionInput({ value, max, onCommit }) {
-  const [text, setText] = useState(String(value));
-  const focusedRef = useRef(false);
-  useEffect(() => { if (!focusedRef.current) setText(String(value)); }, [value]);
-  const commit = () => {
-    const v = parseInt(text, 10);
-    if (v >= 1 && v <= max) onCommit(v);
-    else setText(String(value));
-  };
-  return (
-    <input
-      type="number" min="1" max={max}
-      className="panel-row__num-input"
-      value={text}
-      onFocus={() => { focusedRef.current = true; }}
-      onChange={(e) => setText(e.target.value)}
-      onBlur={() => { focusedRef.current = false; commit(); }}
-      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } }}
-      title="Escribe la posición y pulsa Enter"
-    />
-  );
-}
-
 function EditorTop20() {
   const { data, loading, error, save } = useRanking();
   const [rows, setRows] = useState([]);
