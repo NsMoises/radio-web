@@ -46,6 +46,29 @@ function UploadBtn({ onUpload, label = "Subir imagen" }) {
   );
 }
 
+function PositionInput({ value, max, onCommit }) {
+  const [text, setText] = useState(String(value));
+  const focusedRef = useRef(false);
+  useEffect(() => { if (!focusedRef.current) setText(String(value)); }, [value]);
+  const commit = () => {
+    const v = parseInt(text, 10);
+    if (v >= 1 && v <= max) onCommit(v);
+    else setText(String(value));
+  };
+  return (
+    <input
+      type="number" min="1" max={max}
+      className="panel-row__num-input"
+      value={text}
+      onFocus={() => { focusedRef.current = true; }}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={() => { focusedRef.current = false; commit(); }}
+      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } }}
+      title="Escribe la posición y pulsa Enter"
+    />
+  );
+}
+
 const today = new Date().toISOString().slice(0, 10);
 
 const currentWeekLabel = () =>
@@ -617,9 +640,10 @@ function EditorEstrenos() {
 
   const guardar = async () => {
     if (saving) return; setSaving(true);
-    const res = await save({ premieres, lastUpdatedAt: today });
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const res = await save({ premieres, lastUpdatedAt: todayStr });
     setSaving(false);
-    if (res.ok) { setLastUpdatedAt(today); setStatus({ ok: true, msg: "✓ Estrenos guardados y semana marcada como actualizada." }); }
+    if (res.ok) { setLastUpdatedAt(todayStr); setStatus({ ok: true, msg: "✓ Estrenos guardados y semana marcada como actualizada." }); }
     else if (res.offline) setStatus({ ok: false, msg: "⚠ Sin backend: guardado solo local." });
     else setStatus({ ok: false, msg: "✕ Error: " + (res.error || "") });
   };
@@ -1476,6 +1500,7 @@ function EditorStreaming() {
   const { data, loading, error, save } = useConfig();
   const [streamUrl, setStreamUrl] = useState("");
   const [ytChannelId, setYtChannelId] = useState("");
+  const [showLiveCam, setShowLiveCam] = useState(false);
   const [status, setStatus] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -1483,14 +1508,15 @@ function EditorStreaming() {
     if (!data) return;
     setStreamUrl(data.streamUrl || "");
     setYtChannelId(data.ytChannelId || "");
+    setShowLiveCam(!!data.showLiveCam);
   }, [data]);
 
   const guardar = async () => {
     if (saving) return;
     setSaving(true); setStatus(null);
-    const res = await save({ streamUrl, ytChannelId });
+    const res = await save({ streamUrl, ytChannelId, showLiveCam });
     setSaving(false);
-    if (res.ok) setStatus({ ok: true, msg: "✓ Configuración guardada. El reproductor y la cámara usan el nuevo enlace." });
+    if (res.ok) setStatus({ ok: true, msg: showLiveCam ? "✓ Configuración guardada. La cámara está visible en Inicio." : "✓ Configuración guardada. La cámara está oculta en Inicio." });
     else setStatus({ ok: false, msg: "✕ Error: " + (res.error || "no se pudo guardar") });
   };
 
@@ -1517,6 +1543,12 @@ function EditorStreaming() {
             display: "flex", flexDirection: "column", gap: "10px",
           }}
         >
+          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "10px 12px", background: showLiveCam ? "rgba(0,229,255,0.08)" : "var(--bg)", border: "1px solid " + (showLiveCam ? "var(--accent-dim)" : "var(--border)"), borderRadius: "var(--radius-sm)" }}>
+            <input type="checkbox" checked={showLiveCam} onChange={(e) => setShowLiveCam(e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--accent)" }} />
+            <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>{showLiveCam ? "✓ Cámara en vivo visible en Inicio" : "○ Cámara en vivo oculta en Inicio"}</span>
+            <span style={{ fontSize: "0.82rem", color: "var(--text-dim)", marginLeft: 6 }}>{showLiveCam ? "— se muestra en la página principal" : "— oculta hasta que la actives"}</span>
+          </label>
+          {!showLiveCam && <p className="panel__hint" style={{ marginTop: 0 }}>La sección "📷 Cámara en vivo" no se mostrará en la página de Inicio hasta que actives esta opción y guardes.</p>}
           <div className="panel-row__row panel-row__row--tags">
             <span className="panel-field-label">Link de streaming (audio)</span>
             <input

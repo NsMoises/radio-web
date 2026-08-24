@@ -5,7 +5,8 @@ const DATA_FILE = DATA_DIR . "/config.json";
 
 $DEFAULT_CONFIG = [
   "streamUrl"   => "https://streaming12.elitecomunicacion.es:8208/stream?type=.mp3",
-  "ytChannelId" => "UCodNIEoHHM_H66nlQi2qHPw"
+  "ytChannelId" => "UCodNIEoHHM_H66nlQi2qHPw",
+  "showLiveCam" => false
 ];
 
 // Todos los valores de STREAM_URL/YT se cargan tambien por defaults en el frontend,
@@ -31,6 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
   $cfg = array_merge($DEFAULT_CONFIG, $cfg);
   $cfg["streamUrl"]   = $cfg["streamUrl"]   ?: $DEFAULT_CONFIG["streamUrl"];
   $cfg["ytChannelId"] = $cfg["ytChannelId"] ?: $DEFAULT_CONFIG["ytChannelId"];
+  $cfg["showLiveCam"] = isset($cfg["showLiveCam"]) ? (bool)$cfg["showLiveCam"] : false;
   echo json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   exit;
 }
@@ -43,12 +45,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
   $streamUrl = isset($in["streamUrl"]) ? trim($in["streamUrl"]) : "";
   $ytChannelId = isset($in["ytChannelId"]) ? trim($in["ytChannelId"]) : "";
+  $showLiveCam = isset($in["showLiveCam"]) ? (bool)$in["showLiveCam"] : false;
   if ($streamUrl !== "" && !filter_var($streamUrl, FILTER_VALIDATE_URL)) {
     http_response_code(400);
     echo json_encode(["ok" => false, "error" => "El enlace de streaming no es una URL válida"]); exit;
   }
 
-  $cfg = ["streamUrl" => $streamUrl, "ytChannelId" => $ytChannelId];
+  $cfg = ["streamUrl" => $streamUrl, "ytChannelId" => $ytChannelId, "showLiveCam" => $showLiveCam];
   $ok = file_put_contents(DATA_FILE, json_encode($cfg, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
   if ($ok === false) {
     http_response_code(500);

@@ -4,7 +4,7 @@ import { STREAM_URL } from "../config";
 const API_URL = "/api/config.php";
 const LS_KEY = "radio-web:config:backup";
 
-const DEFAULTS = { streamUrl: STREAM_URL, ytChannelId: "UCodNIEoHHM_H66nlQi2qHPw" };
+const DEFAULTS = { streamUrl: STREAM_URL, ytChannelId: "UCodNIEoHHM_H66nlQi2qHPw", showLiveCam: false };
 
 export function useConfig() {
   const [data, setData] = useState(null);
@@ -18,11 +18,11 @@ export function useConfig() {
       if (!res.ok) throw new Error("API " + res.status);
       const json = await res.json();
       if (!json || typeof json !== "object") throw new Error("Formato inválido");
-      setData({ streamUrl: json.streamUrl || DEFAULTS.streamUrl, ytChannelId: json.ytChannelId || DEFAULTS.ytChannelId });
+      setData({ streamUrl: json.streamUrl || DEFAULTS.streamUrl, ytChannelId: json.ytChannelId || DEFAULTS.ytChannelId, showLiveCam: !!json.showLiveCam });
       try { localStorage.setItem(LS_KEY, JSON.stringify(json)); } catch {}
       return json;
     } catch {
-      try { const ls = localStorage.getItem(LS_KEY); if (ls) { const j = JSON.parse(ls); if (j && j.streamUrl) { setData({ ...DEFAULTS, ...j }); setError("offline"); return j; } } } catch {}
+      try { const ls = localStorage.getItem(LS_KEY); if (ls) { const j = JSON.parse(ls); if (j && j.streamUrl) { setData({ ...DEFAULTS, ...j, showLiveCam: !!j.showLiveCam }); setError("offline"); return j; } } } catch {}
       setData(DEFAULTS); setError("offline"); return DEFAULTS;
     } finally { setLoading(false); }
   }, []);
@@ -37,7 +37,8 @@ export function useConfig() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           streamUrl: newData.streamUrl || "",
-          ytChannelId: newData.ytChannelId || ""
+          ytChannelId: newData.ytChannelId || "",
+          showLiveCam: !!newData.showLiveCam
         })
       });
       const json = await res.json();
