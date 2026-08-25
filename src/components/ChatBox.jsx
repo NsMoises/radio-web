@@ -13,10 +13,18 @@ export default function ChatBox() {
   const [name, setName] = useState(() => {
     try { return localStorage.getItem(LS_NAME) || ""; } catch { return ""; }
   });
+  const [draftName, setDraftName] = useState("");
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   const listRef = useRef(null);
   const inputRef = useRef(null);
+
+  const confirmName = () => {
+    const n = draftName.trim();
+    if (!n) return;
+    setName(n);
+    try { localStorage.setItem(LS_NAME, n); } catch {}
+  };
 
   // Auto-scroll arriba (mensajes más nuevos arriba)
   const scrollToTop = () => {
@@ -70,20 +78,18 @@ export default function ChatBox() {
             <input
               type="text"
               className="chatbox__name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value)}
               placeholder="Tu nombre completo"
               maxLength={30}
               autoFocus
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); confirmName(); } }}
             />
             <button
               type="button"
               className="chatbox__name-btn"
-              onClick={() => {
-                const n = name.trim();
-                if (n) { try { localStorage.setItem(LS_NAME, n); } catch {} }
-              }}
-              disabled={!name.trim()}
+              onClick={confirmName}
+              disabled={!draftName.trim()}
             >
               Usar
             </button>
@@ -92,7 +98,7 @@ export default function ChatBox() {
         {name && (
           <div className="chatbox__greeting">
             <span className="chatbox__greeting-name">{name}</span>
-            <button type="button" className="chatbox__greeting-edit" onClick={() => setName("")} title="Cambiar nombre">✕</button>
+            <button type="button" className="chatbox__greeting-edit" onClick={() => { setName(""); setDraftName(""); }} title="Cambiar nombre">✕</button>
           </div>
         )}
         <div className="chatbox__input-row">
