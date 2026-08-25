@@ -66,15 +66,28 @@ export default function ChatBox() {
 
       <form className="chatbox__form" onSubmit={handleSubmit}>
         {!name && (
-          <input
-            type="text"
-            className="chatbox__name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Tu nombre"
-            maxLength={30}
-            autoFocus
-          />
+          <div className="chatbox__name-row">
+            <input
+              type="text"
+              className="chatbox__name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Tu nombre completo"
+              maxLength={30}
+              autoFocus
+            />
+            <button
+              type="button"
+              className="chatbox__name-btn"
+              onClick={() => {
+                const n = name.trim();
+                if (n) { try { localStorage.setItem(LS_NAME, n); } catch {} }
+              }}
+              disabled={!name.trim()}
+            >
+              Usar
+            </button>
+          </div>
         )}
         {name && (
           <div className="chatbox__greeting">

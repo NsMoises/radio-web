@@ -357,12 +357,19 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 
   display: flex; flex-direction: column; gap: 6px;
   background: var(--bg-2);
 }
+.chatbox__name-row { display: flex; gap: 6px; }
 .chatbox__name {
-  width: 100%; padding: 8px 10px; border-radius: 6px;
+  flex: 1; padding: 8px 10px; border-radius: 6px;
   background: var(--bg); border: 1px solid var(--border);
   color: var(--text); font-size: 0.9rem;
 }
 .chatbox__name:focus { outline: none; border-color: var(--accent); }
+.chatbox__name-btn {
+  padding: 8px 14px; border-radius: 6px; border: none;
+  background: var(--accent); color: #000; font-weight: 700;
+  font-size: 0.82rem; cursor: pointer; white-space: nowrap;
+}
+.chatbox__name-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .chatbox__greeting {
   display: flex; align-items: center; gap: 6px; font-size: 0.82rem;
 }
